@@ -645,7 +645,7 @@ function loadSheetData(num) {
       const allRows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, range:ref});
       hdrs = (allRows[0]||[]).map(h=>h===null||h===undefined?'':String(h));
       const range = XLSX.utils.decode_range(ref);
-      rows = buildRows(ws, allRows.slice(1), range.s.r+1, range.s.c);
+      rows = buildRows(ws, allRows.slice(1), range.s.r+1, range.s.c, hdrs);
     }
   }
 
@@ -654,7 +654,7 @@ function loadSheetData(num) {
     const raw = XLSX.utils.sheet_to_json(ws, {header:1, raw:true});
     const hi  = detectHeaderRow(raw);
     hdrs = (raw[hi]||[]).map(h=>h===null||h===undefined?'':String(h));
-    rows = buildRows(ws, raw.slice(hi+1), hi+1, 0);
+    rows = buildRows(ws, raw.slice(hi+1), hi+1, 0, hdrs);
   }
 
   rows = rows.filter(r=>r.some(v=>v!==undefined&&v!==null&&v!==''));
@@ -675,10 +675,22 @@ function detectHeaderRow(raw) {
   return 0;
 }
 
-// Build rows with date formatting
-function buildRows(ws, rawRows, startRowIdx, startColIdx) {
+// Columns whose values should be displayed as percentage (0.14 → "14.00%")
+const PCT_COL_KEYS = ['% planificado','% completado','gap','ratio','porcentaje','avance'];
+
+function isPctHeader(h) {
+  if(!h) return false;
+  const n = normalize(h);
+  return PCT_COL_KEYS.some(k => n.includes(k));
+}
+
+// Build rows with date and percentage formatting
+function buildRows(ws, rawRows, startRowIdx, startColIdx, hdrs) {
   const dateColSet = new Set();
+  const pctColSet  = new Set();
   const ref = ws['!ref'] ? XLSX.utils.decode_range(ws['!ref']) : null;
+
+  // Detect date columns from cell format
   if(ref){
     for(let ri=startRowIdx; ri<Math.min(startRowIdx+20, ref.e.r+1); ri++){
       for(let ci=ref.s.c; ci<=ref.e.c; ci++){
@@ -689,10 +701,19 @@ function buildRows(ws, rawRows, startRowIdx, startColIdx) {
           const z=cell.z.toLowerCase();
           if(z.includes('yy')||z.includes('dd')||(z.includes('mm')&&!z.includes('#')))
             dateColSet.add(ci-startColIdx);
+          // Percentage format: contains '%'
+          if(z.includes('%'))
+            pctColSet.add(ci-startColIdx);
         }
       }
     }
   }
+
+  // Also detect by header name (covers cases where cell format is plain number)
+  if(hdrs){
+    hdrs.forEach((h, ci) => { if(isPctHeader(h)) pctColSet.add(ci); });
+  }
+
   return rawRows.map(r=>r.map((v,ci)=>{
     if(v===null||v===undefined||v==='') return v;
     if(dateColSet.has(ci)){
@@ -703,6 +724,9 @@ function buildRows(ws, rawRows, startRowIdx, startColIdx) {
         const d=XLSX.SSF.parse_date_code(v);
         if(d&&d.y>1900) return String(d.d).padStart(2,'0')+'/'+String(d.m).padStart(2,'0')+'/'+d.y;
       }
+    }
+    if(pctColSet.has(ci) && typeof v==='number'){
+      return (v*100).toFixed(2)+'%';
     }
     return v;
   }));
