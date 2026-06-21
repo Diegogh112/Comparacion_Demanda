@@ -1,0 +1,7 @@
+# Archivos Excel de datos — no subir al repositorio
+*.xlsm
+*.xlsx
+*.xls
+
+# VS Code
+.vscode/

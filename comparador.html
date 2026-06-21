@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparador de Portafolios TI</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; }
+
+  header {
+    background: linear-gradient(135deg, #1a237e, #283593);
+    color: white; padding: 18px 30px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  header h1 { font-size: 1.3rem; font-weight: 600; }
+  header span { font-size: 0.85rem; opacity: 0.75; }
+
+  .upload-section { display: flex; gap: 20px; padding: 24px 30px; flex-wrap: wrap; }
+  .upload-card {
+    flex: 1; min-width: 280px; background: white; border-radius: 10px;
+    padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 2px dashed #c5cae9; transition: border-color 0.2s;
+  }
+  .upload-card.loaded { border: 2px solid #43a047; }
+  .upload-card h3 { font-size: 0.9rem; color: #5c6bc0; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .upload-card label {
+    display: block; cursor: pointer; background: #e8eaf6; color: #3949ab;
+    border-radius: 6px; padding: 10px 14px; font-size: 0.85rem; text-align: center;
+    transition: background 0.2s;
+  }
+  .upload-card label:hover { background: #c5cae9; }
+  .upload-card input[type=file] { display: none; }
+  .file-info { margin-top: 10px; font-size: 0.8rem; color: #666; min-height: 18px; }
+  .file-info.ok { color: #2e7d32; font-weight: 600; }
+
+  .config-section {
+    background: white; margin: 0 30px 20px; border-radius: 10px;
+    padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .config-section h3 { font-size: 0.85rem; color: #5c6bc0; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .config-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+  .config-group { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
+  .config-group label { font-size: 0.78rem; color: #888; }
+  .config-group select, .config-group input {
+    border: 1px solid #ddd; border-radius: 5px; padding: 6px 10px;
+    font-size: 0.85rem; color: #333; background: #fafafa;
+  }
+
+  /* ── ID columns side-by-side panel ── */
+  .id-cols-panel {
+    background: white; margin: 0 30px 20px; border-radius: 10px;
+    padding: 20px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: none;
+  }
+  .id-cols-panel h3 { font-size: 0.85rem; color: #5c6bc0; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .id-cols-desc { font-size: 0.78rem; color: #999; margin-bottom: 16px; }
+  .id-cols-grid {
+    display: grid;
+    grid-template-columns: 1fr 4px 1fr;
+    gap: 0 0;
+  }
+  .id-cols-side { display: flex; flex-direction: column; gap: 12px; }
+  .id-cols-side h4 { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.4px; margin-bottom: 4px; padding: 5px 10px; border-radius: 5px; }
+  .id-cols-side.port h4 { background: #e8eaf6; color: #3949ab; }
+  .id-cols-side.area h4 { background: #fce4ec; color: #c62828; }
+  .id-cols-divider { background: #eee; margin: 0 16px; border-radius: 2px; }
+  .id-col-row { display: flex; flex-direction: column; gap: 3px; }
+  .id-col-row label { font-size: 0.76rem; color: #888; }
+  .id-col-row select {
+    border: 1px solid #ddd; border-radius: 5px; padding: 5px 8px;
+    font-size: 0.82rem; color: #333; background: #fafafa; width: 100%;
+  }
+  .id-col-row select.auto-matched { border-color: #43a047; background: #f1f8e9; }
+  .id-col-row .match-tag {
+    font-size: 0.7rem; color: #2e7d32; display: none;
+  }
+  .id-col-row select.auto-matched + .match-tag { display: inline; }
+
+  /* ── Column mapping panel ── */
+  .col-map-panel {
+    background: white; margin: 0 30px 20px; border-radius: 10px;
+    padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: none;
+  }
+  .col-map-panel h3 { font-size: 0.85rem; color: #5c6bc0; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .col-map-desc { font-size: 0.78rem; color: #999; margin-bottom: 14px; }
+  .col-map-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+  .col-map-row {
+    display: grid; grid-template-columns: 1fr 32px 1fr 36px;
+    gap: 8px; align-items: center;
+  }
+  .col-map-row select {
+    border: 1px solid #ddd; border-radius: 5px; padding: 5px 8px;
+    font-size: 0.82rem; color: #333; background: #fafafa; width: 100%;
+  }
+  .col-map-arrow {
+    text-align: center; color: #9fa8da; font-size: 1rem; font-weight: 700;
+  }
+  .col-map-del {
+    background: none; border: 1px solid #ffcdd2; border-radius: 5px;
+    color: #c62828; cursor: pointer; padding: 4px 8px; font-size: 0.8rem;
+    transition: background 0.15s;
+  }
+  .col-map-del:hover { background: #ffebee; }
+  .col-map-add {
+    border: 1.5px dashed #9fa8da; background: none; border-radius: 6px;
+    color: #3949ab; padding: 6px 14px; font-size: 0.8rem; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .col-map-add:hover { background: #e8eaf6; }
+
+  /* ── Field filter panel ── */
+  .field-filter-panel {
+    background: white; margin: 0 30px 20px; border-radius: 10px;
+    padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: none;
+  }
+  .field-filter-panel h3 { font-size: 0.85rem; color: #5c6bc0; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field-filter-desc { font-size: 0.78rem; color: #888; margin-bottom: 12px; }
+  .field-chips-wrap {
+    display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px;
+  }
+  .field-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    border: 1.5px solid #c5cae9; border-radius: 16px;
+    padding: 4px 12px; font-size: 0.76rem; cursor: pointer;
+    background: white; color: #3949ab; transition: all 0.15s; user-select: none;
+  }
+  .field-chip.active { background: #3949ab; color: white; border-color: #3949ab; }
+  .field-chip:hover { border-color: #3949ab; }
+  .field-filter-actions { display: flex; gap: 8px; }
+  .chip-action-btn {
+    border: 1px solid #ddd; background: #f5f5f5; border-radius: 5px;
+    padding: 4px 12px; font-size: 0.76rem; cursor: pointer; color: #555;
+  }
+  .chip-action-btn:hover { background: #e8eaf6; color: #3949ab; border-color: #9fa8da; }
+
+  .compare-btn {
+    background: linear-gradient(135deg, #1a237e, #3949ab);
+    color: white; border: none; border-radius: 7px;
+    padding: 10px 28px; font-size: 0.9rem; cursor: pointer;
+    font-weight: 600; transition: opacity 0.2s;
+  }
+  .compare-btn:hover { opacity: 0.88; }
+  .compare-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .summary-bar { display: flex; gap: 14px; padding: 0 30px 20px; flex-wrap: wrap; }
+  .stat-chip {
+    display: flex; align-items: center; gap: 8px; background: white;
+    border-radius: 8px; padding: 10px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+    font-size: 0.82rem;
+  }
+  .stat-chip .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .stat-chip .num { font-size: 1.3rem; font-weight: 700; }
+  .dot-match { background: #43a047; } .dot-diff { background: #f57c00; }
+  .dot-only1 { background: #1565c0; } .dot-only2 { background: #6a1b9a; }
+  .dot-name  { background: #00838f; }
+
+  .filters {
+    display: flex; gap: 10px; padding: 0 30px 14px; flex-wrap: wrap; align-items: center;
+  }
+  .filter-btn {
+    border: 2px solid #ddd; background: white; border-radius: 20px;
+    padding: 5px 14px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; font-weight: 500;
+  }
+  .filter-btn.active { border-color: #3949ab; background: #3949ab; color: white; }
+  .search-box {
+    border: 1px solid #ddd; border-radius: 20px; padding: 5px 14px;
+    font-size: 0.82rem; min-width: 220px; margin-left: auto;
+  }
+
+  .results-container { padding: 0 30px 40px; }
+  #tableWrap {
+    overflow: auto;
+    max-height: 72vh;          /* scroll vertical */
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  table {
+    width: 100%; border-collapse: collapse; background: white;
+    font-size: 0.8rem;
+  }
+  thead tr { background: #1a237e; color: white; }
+  thead th {
+    padding: 10px 10px; text-align: left; white-space: nowrap; font-weight: 600;
+    position: sticky; top: 0; z-index: 2;
+    background-color: #1a237e;          /* explicit bg needed for sticky */
+    color: white;
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+  }
+  /* paired column headers */
+  thead th.th-port { background: #1b5e20; background-color: #1b5e20; }
+  thead th.th-area { background: #b71c1c; background-color: #b71c1c; }
+  tbody tr:nth-child(even) { background: #fafafa; }
+  tbody tr:hover { background: #e8eaf6; }
+  td { padding: 8px 10px; vertical-align: top; border-bottom: 1px solid #eee; max-width: 200px; }
+  td.td-port { background: #f1f8e9; }
+  td.td-area { background: #ffebee; }
+  td.td-same { background: #fff; }
+
+  .badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+  .badge-match { background: #e8f5e9; color: #2e7d32; }
+  .badge-diff  { background: #fff3e0; color: #e65100; }
+  .badge-only1 { background: #e3f2fd; color: #0d47a1; }
+  .badge-only2 { background: #f3e5f5; color: #4a148c; }
+
+  .field-changes { margin-top: 4px; }
+  .change-item { display: flex; gap: 6px; align-items: baseline; margin-bottom: 3px; font-size: 0.75rem; flex-wrap: wrap; }
+  .change-field { font-weight: 600; color: #5c6bc0; min-width: 80px; }
+  .val-old { background: #ffebee; color: #c62828; border-radius: 3px; padding: 1px 5px; }
+  .val-new { background: #e8f5e9; color: #1b5e20; border-radius: 3px; padding: 1px 5px; }
+  .arrow { color: #999; }
+
+  .expand-btn {
+    background: none; border: 1px solid #9fa8da; border-radius: 4px;
+    color: #3949ab; padding: 2px 7px; cursor: pointer; font-size: 0.72rem; margin-top: 4px;
+  }
+  .hidden { display: none; }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: #aaa;
+    background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .empty-state p { font-size: 1rem; margin-top: 16px; }
+  #loading { text-align: center; padding: 40px; color: #3949ab; font-size: 0.9rem; display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+    <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+  </svg>
+  <div>
+    <h1>Comparador de Portafolios TI</h1>
+    <span>Detecta diferencias entre el portafolio de demanda y archivos de otras áreas</span>
+  </div>
+</header>
+
+<!-- ── UPLOAD ── -->
+<div class="upload-section">
+  <div class="upload-card" id="card1">
+    <h3>📋 Portafolio de Demanda (Principal)</h3>
+    <label for="file1">📂 Seleccionar archivo Excel (.xlsx / .xlsm / .xls)</label>
+    <input type="file" id="file1" accept=".xlsx,.xlsm,.xls">
+    <div class="file-info" id="info1">Sin archivo cargado</div>
+    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div class="config-group" style="min-width:140px;"><label>Hoja</label>
+        <select id="sheet1" onchange="onSheetChange(1)"><option>-- carga archivo --</option></select></div>
+      <div class="config-group" style="min-width:160px;"><label>Tabla (opcional)</label>
+        <select id="table1"><option value="">-- sin tabla --</option></select></div>
+    </div>
+  </div>
+  <div class="upload-card" id="card2">
+    <h3>📄 Excel de Otra Área (Comparar)</h3>
+    <label for="file2">📂 Seleccionar archivo Excel (.xlsx / .xlsm / .xls)</label>
+    <input type="file" id="file2" accept=".xlsx,.xlsm,.xls">
+    <div class="file-info" id="info2">Sin archivo cargado</div>
+    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div class="config-group" style="min-width:140px;"><label>Hoja</label>
+        <select id="sheet2" onchange="onSheetChange(2)"><option>-- carga archivo --</option></select></div>
+      <div class="config-group" style="min-width:160px;"><label>Tabla (opcional)</label>
+        <select id="table2"><option value="">-- sin tabla --</option></select></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ID COLUMNS side-by-side ── -->
+<div class="id-cols-panel" id="idColsPanel">
+  <h3>⚙️ Columnas de identificación</h3>
+  <p class="id-cols-desc">Las columnas con borde verde fueron detectadas automáticamente. Puedes cambiarlas si es necesario.</p>
+  <div class="id-cols-grid">
+    <div class="id-cols-side port">
+      <h4>📋 PORTAFOLIO DE DEMANDA</h4>
+      <div class="id-col-row">
+        <label>ID Trámite</label>
+        <select id="col_tramite1"></select>
+        <span class="match-tag">✔ detectado automáticamente</span>
+      </div>
+      <div class="id-col-row">
+        <label>ID Mantenimiento</label>
+        <select id="col_mant1"></select>
+        <span class="match-tag">✔ detectado automáticamente</span>
+      </div>
+      <div class="id-col-row">
+        <label>Nombre del Requerimiento</label>
+        <select id="col_nombre1"></select>
+        <span class="match-tag">✔ detectado automáticamente</span>
+      </div>
+      <div class="id-col-row" id="extra-id-row-port" style="display:none">
+        <label>Otro identificador</label>
+        <select id="col_extra1"></select>
+      </div>
+    </div>
+    <div class="id-cols-divider"></div>
+    <div class="id-cols-side area">
+      <h4>📄 EXCEL DE OTRA ÁREA</h4>
+      <div class="id-col-row">
+        <label>ID Trámite</label>
+        <select id="col_tramite2"></select>
+        <span class="match-tag">✔ detectado automáticamente</span>
+      </div>
+      <div class="id-col-row">
+        <label>ID Mantenimiento</label>
+        <select id="col_mant2"></select>
+        <span class="match-tag">✔ detectado automáticamente</span>
+      </div>
+      <div class="id-col-row">
+        <label>Nombre del Requerimiento</label>
+        <select id="col_nombre2"></select>
+        <span class="match-tag">✔ detectado automáticamente</span>
+      </div>
+      <div class="id-col-row" id="extra-id-row-area" style="display:none">
+        <label>Otro identificador</label>
+        <select id="col_extra2"></select>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:14px;">
+    <button class="chip-action-btn" id="btnAddExtra" onclick="toggleExtraId()">+ Añadir otro identificador</button>
+  </div>
+</div>
+
+<!-- ── COLUMN MAPPING PANEL (shown after both files loaded) ── -->
+<div class="col-map-panel" id="colMapPanel">
+  <h3>🔗 Vincular columnas equivalentes</h3>
+  <p class="col-map-desc">
+    Si un campo del Portafolio y un campo del Excel de área contienen lo mismo pero tienen nombres distintos,
+    vincúlalos aquí. Se compararán como si fueran el mismo campo y el nombre que aparecerá es el del Portafolio.
+  </p>
+  <div class="col-map-rows" id="colMapRows"></div>
+  <button class="col-map-add" onclick="addMappingRow()">+ Añadir vínculo</button>
+</div>
+
+<!-- ── FIELD FILTER PANEL (shown after comparison) ── -->
+<div class="field-filter-panel" id="fieldFilterPanel">
+  <h3>🔎 Filtrar campos a mostrar</h3>
+  <p class="field-filter-desc">
+    Selecciona los campos que quieres ver en la tabla y en el export. Aplica a filas con diferencias.
+    Si no marcas ninguno se muestran todos.
+  </p>
+  <div class="field-chips-wrap" id="fieldChips"></div>
+  <div class="field-filter-actions">
+    <button class="chip-action-btn" onclick="selectAllChips(true)">Seleccionar todos</button>
+    <button class="chip-action-btn" onclick="selectAllChips(false)">Limpiar selección</button>
+  </div>
+</div>
+
+<!-- ── BUTTONS ── -->
+<div style="display:flex;gap:10px;padding:0 30px 20px;flex-wrap:wrap;">
+  <button class="compare-btn" id="btnCompare" disabled onclick="runComparison()">▶ Comparar ahora</button>
+  <button class="compare-btn" id="btnExport" onclick="exportResults()"
+    style="background:linear-gradient(135deg,#2e7d32,#43a047);display:none">⬇ Exportar a Excel</button>
+</div>
+
+<div id="loading">⏳ Procesando comparación...</div>
+
+<!-- ── SUMMARY ── -->
+<div class="summary-bar" id="summaryBar" style="display:none">
+  <div class="stat-chip"><div class="dot dot-diff"></div><div><div class="num" id="cnt-diff">0</div>Con diferencias</div></div>
+  <div class="stat-chip"><div class="dot dot-match"></div><div><div class="num" id="cnt-match">0</div>Sin cambios</div></div>
+  <div class="stat-chip"><div class="dot dot-name"></div><div><div class="num" id="cnt-name">0</div>Match por nombre</div></div>
+  <div class="stat-chip"><div class="dot dot-only1"></div><div><div class="num" id="cnt-only1">0</div>Solo en portafolio</div></div>
+  <div class="stat-chip"><div class="dot dot-only2"></div><div><div class="num" id="cnt-only2">0</div>Solo en área</div></div>
+</div>
+
+<!-- ── STATUS FILTERS ── -->
+<div class="filters" id="filterBar" style="display:none">
+  <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
+  <button class="filter-btn" style="border-color:#f57c00;color:#f57c00" onclick="setFilter('diff',this)">🔶 Con diferencias</button>
+  <button class="filter-btn" style="border-color:#43a047;color:#43a047" onclick="setFilter('match',this)">✅ Sin cambios</button>
+  <button class="filter-btn" style="border-color:#00838f;color:#00838f" onclick="setFilter('name',this)">🔤 Match por nombre</button>
+  <button class="filter-btn" style="border-color:#1565c0;color:#1565c0" onclick="setFilter('only1',this)">📋 Solo en portafolio</button>
+  <button class="filter-btn" style="border-color:#6a1b9a;color:#6a1b9a" onclick="setFilter('only2',this)">📄 Solo en área</button>
+  <input class="search-box" type="text" id="searchBox" placeholder="🔍 Buscar por ID, nombre..." oninput="applyFilters()">
+</div>
+
+<!-- ── TABLE ── -->
+<div class="results-container">
+  <div class="empty-state" id="emptyState">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/>
+      <line x1="8" y1="12" x2="16" y2="12"/>
+    </svg>
+    <p>Carga los dos archivos y pulsa <b>Comparar</b> para ver las diferencias</p>
+  </div>
+  <div id="tableWrap" style="display:none; overflow-x:auto;">
+    <table id="resultsTable">
+      <thead><tr id="tableHead"></tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONSTANTS & STATE
+// ═══════════════════════════════════════════════════════════
+const IMPORTANT_COLS = [
+  'ID Trámite','ID Mantenimiento','Nombre del Requerimiento',
+  'Gerencia','Subgerencia','Sección','Cartera',
+  'Área Responsable TI','Entidad Asignado','Líder Técnico/Analista',
+  'Gestor TI','Estado TI','Macroestado',
+  'Fecha Inicio- Desarrollo (PLANIFICADA)','Fecha Inicio- Desarrollo',
+  'Fecha Fin- Desarrollo','Fecha Fin- Desarrollo (PLANIFICADA)',
+  'Fecha Inicio- Calidad','Fecha Fin- Calidad',
+  'Fecha Fin- Calidad (PLANIFICADA)','Fecha Inicio- Producción',
+  'Fecha Fin- Producción','Fecha Fin-Planificada',
+  'Último Estado ClearQuest','CRONOGRAMA','indicador de Avance',
+  '% PLANIFICADO','% COMPLETADO','GAP','RATIO',
+  'Comienzo Desarrollo','Fin Desarrollo',
+  'Comienzo Calidad','Fin Calidad',
+  'Comienzo Producción','Fin Producción'
+];
+
+let wb1=null, wb2=null;
+let data1=[], data2=[];
+let headers1=[], headers2=[];
+let compResults=[];         // full result set
+let allDiffCols=[];         // every col name that has at least one diff
+let selectedFieldFilter=new Set(); // which cols to show (empty = all)
+let currentFilter='all';
+let colMappings=[];         // [{col1: 'Portafolio col name', col2: 'Area col name'}]
+
+// ═══════════════════════════════════════════════════════════
+//  FILE LOADING
+// ═══════════════════════════════════════════════════════════
+
+// Keywords for fuzzy auto-detection of ID columns
+const TRAMITE_KEYS  = ['trámite','tramite','tramit'];
+const MANT_KEYS     = ['mantenimiento','mant','maintenance'];
+const NOMBRE_KEYS   = ['nombre del requerimiento','nombre requerimiento','requerimiento','nombre req'];
+
+// Raw ArrayBuffers — not used directly, ZIP parsing is done inside readWorkbook
+let tableMap1 = new Map(), tableMap2 = new Map();
+
+function readWorkbook(fileInput, sheetSel, infoEl, cardEl, num) {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const buf = e.target.result;
+
+      const wb = XLSX.read(buf, { type:'array', cellDates:true });
+      if (num===1) wb1=wb; else wb2=wb;
+
+      // Parse tables from ZIP asynchronously
+      const tMap = await parseTablesFromZip(buf);
+      if (num===1) tableMap1=tMap; else tableMap2=tMap;
+
+      // Populate sheet selector
+      sheetSel.innerHTML='';
+      wb.SheetNames.forEach(s => {
+        const o=document.createElement('option');
+        o.value=s; o.text=s;
+        if(s.toLowerCase().includes('demanda')||s.toLowerCase().includes('cartera')) o.selected=true;
+        sheetSel.appendChild(o);
+      });
+
+      infoEl.textContent='✔ '+file.name; infoEl.className='file-info ok';
+      cardEl.classList.add('loaded');
+      onSheetChange(num);
+    } catch(err) {
+      infoEl.textContent='❌ '+err.message; infoEl.className='file-info';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── Parse tables directly from ZIP bytes (works when SheetJS doesn't expose !tables) ──
+// Returns Promise<Map<sheetXmlFilename, [{name, ref}]>>
+async function parseTablesFromZip(buf) {
+  const tablesBySheetFile = new Map(); // 'xl/worksheets/sheet3.xml' -> [{name,ref}]
+  try {
+    const bytes = new Uint8Array(buf);
+    const td = new TextDecoder('utf-8');
+
+    // Minimal ZIP parser — reads stored (uncompressed) and deflated entries
+    const entries = {};
+    let i = 0;
+    while (i < bytes.length - 30) {
+      if (bytes[i]===0x50&&bytes[i+1]===0x4B&&bytes[i+2]===0x03&&bytes[i+3]===0x04) {
+        const compression = bytes[i+8]|(bytes[i+9]<<8);
+        const compSize    = bytes[i+18]|(bytes[i+19]<<8)|(bytes[i+20]<<16)|(bytes[i+21]<<24);
+        const uncompSize  = bytes[i+22]|(bytes[i+23]<<8)|(bytes[i+24]<<16)|(bytes[i+25]<<24);
+        const fnLen       = bytes[i+26]|(bytes[i+27]<<8);
+        const extraLen    = bytes[i+28]|(bytes[i+29]<<8);
+        const fn          = td.decode(bytes.slice(i+30, i+30+fnLen));
+        const dataStart   = i+30+fnLen+extraLen;
+        const dataEnd     = dataStart + compSize;
+        if (fn && compSize >= 0) {
+          entries[fn] = { compression, data: bytes.slice(dataStart, dataEnd), uncompSize };
+        }
+        i = Math.max(dataEnd, i+1);
+      } else { i++; }
+    }
+
+    async function getEntry(name) {
+      const e = entries[name]; if(!e) return null;
+      if (e.compression === 0) return td.decode(e.data);
+      if (e.compression === 8 && typeof DecompressionStream !== 'undefined') {
+        const ds = new DecompressionStream('deflate-raw');
+        const writer = ds.writable.getWriter();
+        writer.write(e.data); writer.close();
+        const reader = ds.readable.getReader();
+        const chunks = [];
+        while(true){ const {done,value}=await reader.read(); if(done) break; chunks.push(value); }
+        const out = new Uint8Array(chunks.reduce((a,c)=>a+c.length,0));
+        let off=0; chunks.forEach(c=>{out.set(c,off);off+=c.length;});
+        return td.decode(out);
+      }
+      return null;
+    }
+
+    // 1. Read all table XMLs to build name->info map
+    const tableInfoMap = {}; // 'tables/table2.xml' -> {name, ref}
+    for (const key of Object.keys(entries)) {
+      if (!key.startsWith('xl/tables/') || !key.endsWith('.xml')) continue;
+      const xml = await getEntry(key);
+      if (!xml) continue;
+      const nameM = xml.match(/ name="([^"]+)"/);
+      const refM  = xml.match(/ ref="([^"]+)"/);
+      if (nameM) {
+        const shortKey = key.replace('xl/', '');
+        tableInfoMap[shortKey] = { name: nameM[1], ref: refM ? refM[1] : '' };
+      }
+    }
+
+    // 2. Read sheet relationship files to map sheet -> table files
+    for (const key of Object.keys(entries)) {
+      if (!key.startsWith('xl/worksheets/_rels/') || !key.endsWith('.rels')) continue;
+      const xml = await getEntry(key);
+      if (!xml) continue;
+      const sheetFile = key.replace('xl/worksheets/_rels/', 'xl/worksheets/')
+                           .replace('.rels', '');
+      const tables = [];
+      const matches = xml.matchAll(/relationships\/table[^"]*"[^>]*Target="([^"]+)"/g);
+      for (const m of matches) {
+        let target = m[1].replace('../', 'xl/'); // ../tables/table2.xml -> xl/tables/table2.xml
+        // normalize: sometimes target is just 'tables/table2.xml'
+        if (!target.startsWith('xl/')) target = 'xl/' + target;
+        const shortTarget = target.replace('xl/', '');
+        if (tableInfoMap[shortTarget]) tables.push(tableInfoMap[shortTarget]);
+      }
+      if (tables.length) tablesBySheetFile.set(sheetFile, tables);
+    }
+
+  } catch(e) { console.warn('parseTablesFromZip failed:', e); }
+  return tablesBySheetFile;
+}
+
+// Map SheetJS sheet name to xl/worksheets/sheetN.xml filename
+// Uses wb.SheetNames index + workbook.xml ordering (SheetJS preserves order)
+function sheetNameToXmlFile(wb, sheetName) {
+  // SheetJS stores the xml filename in wb.Sheets[name]['!ref'] parent — not directly accessible
+  // but the order in wb.SheetNames matches the order in workbook.xml <sheets>
+  // We can try wb.Workbook.Sheets[i].Hidden / name
+  if (wb.Workbook && wb.Workbook.Sheets) {
+    const idx = wb.SheetNames.indexOf(sheetName);
+    if (idx >= 0) {
+      // SheetJS typically uses sequential numbering starting at sheet1
+      return 'xl/worksheets/sheet'+(idx+1)+'.xml';
+    }
+  }
+  const idx = wb.SheetNames.indexOf(sheetName);
+  return idx >= 0 ? 'xl/worksheets/sheet'+(idx+1)+'.xml' : null;
+}
+
+// Stores parsed table map per workbook (populated on file load, see above)
+
+// Get tables for a sheet, combining ZIP parse + SheetJS fallback
+function getSheetTables(wb, sheetName, tableMap) {
+  const ws = wb.Sheets[sheetName];
+  if (!ws) return [];
+
+  // Method 1: from our ZIP parse result
+  if (tableMap && tableMap.size > 0) {
+    const xmlFile = sheetNameToXmlFile(wb, sheetName);
+    if (xmlFile && tableMap.has(xmlFile)) return tableMap.get(xmlFile);
+    // also try without leading xl/
+    for (const [k,v] of tableMap.entries()) {
+      if (k.endsWith('/' + sheetName.replace(/ /g,'_') + '.xml')) return v;
+    }
+  }
+
+  // Method 2: SheetJS ws['!tables']
+  if (ws['!tables'] && ws['!tables'].length > 0) {
+    return ws['!tables'].map(t => ({ name: t.name||t.Name, ref: t.ref||t.Ref||'' }));
+  }
+
+  return [];
+}
+
+function onSheetChange(num) {
+  const wb = num===1?wb1:wb2; if(!wb) return;
+  const tMap = num===1?tableMap1:tableMap2;
+  const sn = document.getElementById('sheet'+num).value;
+
+  // Populate table selector
+  const tableSel = document.getElementById('table'+num);
+  tableSel.innerHTML='<option value="">-- sin tabla (hoja completa) --</option>';
+
+  const tables = getSheetTables(wb, sn, tMap);
+  tables.forEach(t => {
+    const o = document.createElement('option');
+    o.value = JSON.stringify(t);
+    o.text  = t.name + (t.ref ? '  ['+t.ref+']' : '');
+    if (t.name.toLowerCase().includes('cartera') || t.name.toLowerCase().includes('demanda')) o.selected = true;
+    tableSel.appendChild(o);
+  });
+
+  loadSheetData(num);
+}
+
+function loadSheetData(num) {
+  const wb = num===1?wb1:wb2; if(!wb) return;
+  const sn = document.getElementById('sheet'+num).value;
+  const ws = wb.Sheets[sn];
+  const tableVal = document.getElementById('table'+num).value;
+
+  let hdrs=[], rows=[];
+
+  if (tableVal) {
+    // Use the table's ref range
+    const tableInfo = JSON.parse(tableVal);
+    const ref = tableInfo.ref;
+    if (ref) {
+      const allRows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, range:ref});
+      hdrs = (allRows[0]||[]).map(h=>h===null||h===undefined?'':String(h));
+      const range = XLSX.utils.decode_range(ref);
+      rows = buildRows(ws, allRows.slice(1), range.s.r+1, range.s.c);
+    }
+  }
+
+  // Fallback or no table selected: auto-detect header row
+  if (!hdrs.length) {
+    const raw = XLSX.utils.sheet_to_json(ws, {header:1, raw:true});
+    const hi  = detectHeaderRow(raw);
+    hdrs = (raw[hi]||[]).map(h=>h===null||h===undefined?'':String(h));
+    rows = buildRows(ws, raw.slice(hi+1), hi+1, 0);
+  }
+
+  rows = rows.filter(r=>r.some(v=>v!==undefined&&v!==null&&v!==''));
+
+  if(num===1){headers1=hdrs;data1=rows;}else{headers2=hdrs;data2=rows;}
+  populateColSelectors(num, hdrs);
+  maybeShowIdPanel();
+  checkReady();
+}
+
+// Auto-detect which row is the header (first row with ≥3 non-empty text cells)
+function detectHeaderRow(raw) {
+  for(let i=0;i<Math.min(raw.length,20);i++){
+    const row=raw[i]||[];
+    const textCells=row.filter(v=>v!==null&&v!==undefined&&isNaN(v)&&String(v).trim()!=='');
+    if(textCells.length>=3) return i;
+  }
+  return 0;
+}
+
+// Build rows with date formatting
+function buildRows(ws, rawRows, startRowIdx, startColIdx) {
+  const dateColSet = new Set();
+  const ref = ws['!ref'] ? XLSX.utils.decode_range(ws['!ref']) : null;
+  if(ref){
+    for(let ri=startRowIdx; ri<Math.min(startRowIdx+20, ref.e.r+1); ri++){
+      for(let ci=ref.s.c; ci<=ref.e.c; ci++){
+        const cell=ws[XLSX.utils.encode_cell({r:ri,c:ci})];
+        if(!cell) continue;
+        if(cell.t==='d'){ dateColSet.add(ci-startColIdx); continue; }
+        if(cell.t==='n' && cell.z){
+          const z=cell.z.toLowerCase();
+          if(z.includes('yy')||z.includes('dd')||(z.includes('mm')&&!z.includes('#')))
+            dateColSet.add(ci-startColIdx);
+        }
+      }
+    }
+  }
+  return rawRows.map(r=>r.map((v,ci)=>{
+    if(v===null||v===undefined||v==='') return v;
+    if(dateColSet.has(ci)){
+      if(v instanceof Date){
+        return String(v.getDate()).padStart(2,'0')+'/'+String(v.getMonth()+1).padStart(2,'0')+'/'+v.getFullYear();
+      }
+      if(typeof v==='number'){
+        const d=XLSX.SSF.parse_date_code(v);
+        if(d&&d.y>1900) return String(d.d).padStart(2,'0')+'/'+String(d.m).padStart(2,'0')+'/'+d.y;
+      }
+    }
+    return v;
+  }));
+}
+
+// Auto-match a header name against keyword lists, returns col index or -1
+function autoMatchCol(hdrs, keyList) {
+  for(let i=0;i<hdrs.length;i++){
+    const h=normalize(hdrs[i]);
+    if(keyList.some(k=>h===normalize(k))) return i;
+  }
+  for(let i=0;i<hdrs.length;i++){
+    const h=normalize(hdrs[i]);
+    if(keyList.some(k=>h.includes(normalize(k)))) return i;
+  }
+  return -1;
+}
+
+function populateColSelectors(num, hdrs) {
+  const selIds   = num===1?['col_tramite1','col_mant1','col_nombre1']:['col_tramite2','col_mant2','col_nombre2'];
+  const keyLists = [TRAMITE_KEYS, MANT_KEYS, NOMBRE_KEYS];
+  selIds.forEach((selId,i)=>{
+    const sel=document.getElementById(selId);
+    sel.innerHTML='<option value="">-- ninguna --</option>';
+    hdrs.forEach((h,idx)=>{
+      if(!h) return;
+      const o=document.createElement('option'); o.value=idx; o.text=h;
+      sel.appendChild(o);
+    });
+    const match=autoMatchCol(hdrs, keyLists[i]);
+    if(match>=0){ sel.value=String(match); sel.classList.add('auto-matched'); }
+    else         { sel.value=''; sel.classList.remove('auto-matched'); }
+  });
+  // Repopulate extra ID selector (preserves current selection if possible)
+  const extraSel = document.getElementById('col_extra'+num);
+  if(extraSel){
+    const prev = extraSel.value;
+    extraSel.innerHTML='<option value="">-- ninguna --</option>';
+    hdrs.forEach((h,idx)=>{ if(!h) return; const o=document.createElement('option'); o.value=idx; o.text=h; extraSel.appendChild(o); });
+    if(prev) extraSel.value=prev;
+  }
+}
+
+function maybeShowIdPanel() {
+  const hasAny = headers1.length>0 || headers2.length>0;
+  document.getElementById('idColsPanel').style.display = hasAny ? 'block' : 'none';
+  const hasBoth = headers1.length>0 && headers2.length>0;
+  document.getElementById('colMapPanel').style.display = hasBoth ? 'block' : 'none';
+  if (hasBoth) refreshMappingSelects();
+}
+
+function toggleExtraId() {
+  const rowPort = document.getElementById('extra-id-row-port');
+  const rowArea = document.getElementById('extra-id-row-area');
+  const btn     = document.getElementById('btnAddExtra');
+  const hidden  = rowPort.style.display === 'none';
+  rowPort.style.display = hidden ? 'flex' : 'none';
+  rowArea.style.display = hidden ? 'flex' : 'none';
+  btn.textContent = hidden ? '✕ Quitar otro identificador' : '+ Añadir otro identificador';
+  if (!hidden) {
+    // reset when hiding
+    document.getElementById('col_extra1').value = '';
+    document.getElementById('col_extra2').value = '';
+  }
+}
+
+function checkReady() {
+  document.getElementById('btnCompare').disabled=!(data1.length&&data2.length);
+}
+
+document.getElementById('file1').addEventListener('change',function(){
+  readWorkbook(this,document.getElementById('sheet1'),document.getElementById('info1'),document.getElementById('card1'),1);
+});
+document.getElementById('file2').addEventListener('change',function(){
+  readWorkbook(this,document.getElementById('sheet2'),document.getElementById('info2'),document.getElementById('card2'),2);
+});
+document.getElementById('table1').addEventListener('change',()=>{ if(wb1) loadSheetData(1); });
+document.getElementById('table2').addEventListener('change',()=>{ if(wb2) loadSheetData(2); });
+
+// ═══════════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════════
+function normalize(v){ if(v===null||v===undefined) return ''; return String(v).trim().toLowerCase().replace(/\s+/g,' '); }
+function fmtVal(v){ if(v===null||v===undefined||v==='') return '(vacío)'; return String(v).trim(); }
+function escHtml(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function getIdx(id){ const v=document.getElementById(id).value; return v===''?-1:parseInt(v); }
+
+// ═══════════════════════════════════════════════════════════
+//  COMPARISON
+// ═══════════════════════════════════════════════════════════
+function runComparison() {
+  ['loading'].forEach(id=>document.getElementById(id).style.display='block');
+  ['tableWrap','emptyState','summaryBar','filterBar','fieldFilterPanel'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+  });
+  setTimeout(()=>{ try{ doComparison(); } catch(e){ alert('Error: '+e.message); document.getElementById('loading').style.display='none'; } },50);
+}
+
+function doComparison() {
+  const iT1=getIdx('col_tramite1'), iM1=getIdx('col_mant1'), iN1=getIdx('col_nombre1');
+  const iT2=getIdx('col_tramite2'), iM2=getIdx('col_mant2'), iN2=getIdx('col_nombre2');
+  const iX1=getIdx('col_extra1'),   iX2=getIdx('col_extra2');  // extra matching cols
+
+  const byT2=new Map(), byM2=new Map(), byN2=new Map(), byX2=new Map(), matched2=new Set();
+  data2.forEach((row,i)=>{
+    const t=iT2>=0?normalize(row[iT2]):'';
+    const m=iM2>=0?normalize(row[iM2]):'';
+    const n=iN2>=0?normalize(row[iN2]):'';
+    const x=iX2>=0?normalize(row[iX2]):'';
+    if(t) byT2.set(t,i);
+    if(m) byM2.set(m,i);
+    if(n) byN2.set(n,i);
+    if(x) byX2.set(x,i);
+  });
+
+  // build common columns list
+  const commonCols=[];
+  IMPORTANT_COLS.forEach(col=>{
+    const i1=headers1.findIndex(h=>normalize(h)===normalize(col));
+    const i2=headers2.findIndex(h=>normalize(h)===normalize(col));
+    if(i1>=0&&i2>=0) commonCols.push({col,i1,i2});
+  });
+  // Apply user-defined column mappings (col1 from portafolio ↔ col2 from area)
+  colMappings.forEach(({col1,col2})=>{
+    if(!col1||!col2) return;
+    const i1=headers1.findIndex(h=>normalize(h)===normalize(col1));
+    const i2=headers2.findIndex(h=>normalize(h)===normalize(col2));
+    if(i1<0||i2<0) return;
+    // Remove any existing entry that uses i1 or i2 (avoid duplicates)
+    const dupIdx=commonCols.findIndex(c=>c.i1===i1||c.i2===i2);
+    if(dupIdx>=0) commonCols.splice(dupIdx,1);
+    commonCols.push({col:col1,i1,i2}); // portafolio name is canonical
+  });
+  // Build a set of already-used area column indices to skip in auto-append
+  const usedI2=new Set(commonCols.map(c=>c.i2));
+  const usedI1=new Set(commonCols.map(c=>c.i1));
+  // Append remaining columns from area that share exact name with portafolio
+  // and are not already covered by a mapping
+  headers2.forEach((h2,i2)=>{
+    if(!h2) return;
+    if(usedI2.has(i2)) return; // already used by a mapping
+    if(commonCols.find(c=>normalize(c.col)===normalize(h2))) return;
+    const i1=headers1.findIndex(h=>normalize(h)===normalize(h2));
+    if(i1>=0&&!usedI1.has(i1)) commonCols.push({col:h2,i1,i2});
+  });
+
+  const results=[];
+
+  data1.forEach(row1=>{
+    const t1=iT1>=0?normalize(row1[iT1]):'';
+    const m1=iM1>=0?normalize(row1[iM1]):'';
+    const n1=iN1>=0?normalize(row1[iN1]):'';
+    const x1=iX1>=0?normalize(row1[iX1]):'';
+    let r2i=-1, mType='';
+    if(t1&&byT2.has(t1)){r2i=byT2.get(t1);mType='id_tramite';}
+    else if(m1&&byM2.has(m1)){r2i=byM2.get(m1);mType='id_mant';}
+    else if(x1&&byX2.has(x1)){r2i=byX2.get(x1);mType='extra';}
+    else if(n1&&byN2.has(n1)){r2i=byN2.get(n1);mType='nombre';}
+
+    if(r2i===-1){
+      results.push({status:'only1',matchType:'-',
+        tramite:fmtVal(iT1>=0?row1[iT1]:''), mant:fmtVal(iM1>=0?row1[iM1]:''), nombre:fmtVal(iN1>=0?row1[iN1]:''),
+        diffs:[],allVals:{},row1,row2:null});
+      return;
+    }
+    matched2.add(r2i);
+    const row2=data2[r2i];
+    const diffs=[], allVals={};
+    commonCols.forEach(({col,i1,i2})=>{
+      const v1=fmtVal(row1[i1]), v2=fmtVal(row2[i2]);
+      allVals[col]={v1,v2};
+      if(normalize(v1)!==normalize(v2)) diffs.push({col,v1,v2});
+    });
+    results.push({
+      status:diffs.length>0?'diff':'match', matchType:mType,
+      tramite:fmtVal(iT1>=0?row1[iT1]:''), mant:fmtVal(iM1>=0?row1[iM1]:''), nombre:fmtVal(iN1>=0?row1[iN1]:''),
+      diffs, allVals, row1, row2
+    });
+  });
+
+  data2.forEach((row2,i2)=>{
+    if(matched2.has(i2)) return;
+    results.push({status:'only2',matchType:'-',
+      tramite:fmtVal(iT2>=0?row2[iT2]:''), mant:fmtVal(iM2>=0?row2[iM2]:''), nombre:fmtVal(iN2>=0?row2[iN2]:''),
+      diffs:[],allVals:{},row1:null,row2});
+  });
+
+  compResults=results;
+
+  // collect cols that have at least one diff, but only those in IMPORTANT_COLS (preserving order)
+  const diffColSet=new Set();
+  results.forEach(r=>r.diffs.forEach(d=>diffColSet.add(d.col)));
+  allDiffCols=IMPORTANT_COLS.filter(col=>diffColSet.has(col));
+  selectedFieldFilter=new Set(); // clear = show all
+
+  buildFieldChips();
+  renderResults();
+  document.getElementById('loading').style.display='none';
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  COLUMN MAPPINGS
+// ═══════════════════════════════════════════════════════════
+function addMappingRow(col1Val='', col2Val='') {
+  const wrap = document.getElementById('colMapRows');
+  const idx  = wrap.children.length;
+  const row  = document.createElement('div');
+  row.className = 'col-map-row';
+  row.dataset.idx = idx;
+
+  const sel1 = buildMappingSelect(headers1, col1Val, 'port');
+  const arrow = document.createElement('div');
+  arrow.className = 'col-map-arrow'; arrow.textContent = '↔';
+  const sel2 = buildMappingSelect(headers2, col2Val, 'area');
+  const del  = document.createElement('button');
+  del.className = 'col-map-del'; del.textContent = '✕';
+  del.onclick = () => { row.remove(); syncMappings(); };
+
+  sel1.onchange = sel2.onchange = syncMappings;
+  row.appendChild(sel1); row.appendChild(arrow);
+  row.appendChild(sel2); row.appendChild(del);
+  wrap.appendChild(row);
+  syncMappings();
+}
+
+function buildMappingSelect(headers, selectedVal, side) {
+  const sel = document.createElement('select');
+  sel.dataset.side = side;
+  const empty = document.createElement('option');
+  empty.value=''; empty.text='-- elegir columna --';
+  sel.appendChild(empty);
+  headers.forEach((h,i)=>{
+    if(!h) return;
+    const o=document.createElement('option');
+    o.value=h; o.text=h;
+    if(normalize(h)===normalize(selectedVal)) o.selected=true;
+    sel.appendChild(o);
+  });
+  return sel;
+}
+
+function syncMappings() {
+  colMappings=[];
+  document.querySelectorAll('#colMapRows .col-map-row').forEach(row=>{
+    const sels=row.querySelectorAll('select');
+    const col1=sels[0]?sels[0].value:'';
+    const col2=sels[1]?sels[1].value:'';
+    if(col1&&col2) colMappings.push({col1,col2});
+  });
+}
+
+// Refresh the options in all existing mapping rows when headers change
+function refreshMappingSelects() {
+  document.querySelectorAll('#colMapRows .col-map-row').forEach(row=>{
+    const sels=row.querySelectorAll('select');
+    if(!sels[0]||!sels[1]) return;
+    const v1=sels[0].value, v2=sels[1].value;
+    const newSel1=buildMappingSelect(headers1,v1,'port');
+    const newSel2=buildMappingSelect(headers2,v2,'area');
+    newSel1.onchange=newSel2.onchange=syncMappings;
+    sels[0].replaceWith(newSel1);
+    sels[1].replaceWith(newSel2);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FIELD CHIPS (filter by column)
+// ═══════════════════════════════════════════════════════════
+function buildFieldChips() {
+  const wrap=document.getElementById('fieldChips');
+  wrap.innerHTML='';
+  allDiffCols.forEach(col=>{
+    const chip=document.createElement('span');
+    chip.className='field-chip';
+    chip.textContent=col;
+    chip.dataset.col=col;
+    chip.onclick=()=>toggleChip(chip);
+    wrap.appendChild(chip);
+  });
+  document.getElementById('fieldFilterPanel').style.display=allDiffCols.length?'block':'none';
+}
+
+function toggleChip(chip) {
+  const col=chip.dataset.col;
+  if(selectedFieldFilter.has(col)){
+    selectedFieldFilter.delete(col);
+    chip.classList.remove('active');
+  } else {
+    selectedFieldFilter.add(col);
+    chip.classList.add('active');
+  }
+  applyFilters();
+}
+
+function selectAllChips(select) {
+  const chips=document.querySelectorAll('.field-chip');
+  chips.forEach(ch=>{
+    if(select){ selectedFieldFilter.add(ch.dataset.col); ch.classList.add('active'); }
+    else      { selectedFieldFilter.delete(ch.dataset.col); ch.classList.remove('active'); }
+  });
+  applyFilters();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════
+
+// Devuelve el status efectivo de una fila teniendo en cuenta el filtro de campos activo.
+// Una fila "diff" cuyas diferencias NO están en ningún campo seleccionado se trata como "match".
+function effectiveStatus(r) {
+  if(r.status==='diff' && selectedFieldFilter.size>0){
+    const hasSel=r.diffs.some(d=>selectedFieldFilter.has(d.col));
+    return hasSel?'diff':'match';
+  }
+  return r.status;
+}
+
+function renderResults() {
+  document.getElementById('summaryBar').style.display='flex';
+  document.getElementById('filterBar').style.display='flex';
+  document.getElementById('btnExport').style.display='inline-block';
+  applyFilters();
+}
+
+function setFilter(f,btn) {
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+// Returns the cols to actually show based on selectedFieldFilter
+function getActiveCols() {
+  if(selectedFieldFilter.size===0) return allDiffCols;  // all
+  return allDiffCols.filter(c=>selectedFieldFilter.has(c));
+}
+
+function applyFilters() {
+  const search=normalize(document.getElementById('searchBox').value);
+  const activeCols=getActiveCols();
+
+  // ── Recalculate counters based on active field filter ──
+  const counts={diff:0,match:0,name:0,only1:0,only2:0};
+  compResults.forEach(r=>{
+    const eff=effectiveStatus(r);
+    if(eff==='diff')   counts.diff++;
+    if(eff==='match')  counts.match++;
+    if(eff==='only1')  counts.only1++;
+    if(eff==='only2')  counts.only2++;
+    if(r.matchType==='nombre') counts.name++;
+  });
+  document.getElementById('cnt-diff').textContent  =counts.diff;
+  document.getElementById('cnt-match').textContent =counts.match;
+  document.getElementById('cnt-name').textContent  =counts.name;
+  document.getElementById('cnt-only1').textContent =counts.only1;
+  document.getElementById('cnt-only2').textContent =counts.only2;
+
+  // ── Filter rows ──
+  const filtered=compResults.filter(r=>{
+    const eff=effectiveStatus(r);
+    if(currentFilter!=='all'&&eff!==currentFilter) return false;
+    if(search&&!normalize(r.tramite+' '+r.mant+' '+r.nombre).includes(search)) return false;
+    return true;
+  });
+
+  const tbody=document.getElementById('tableBody');
+  const thead=document.getElementById('tableHead');
+  tbody.innerHTML='';
+
+  if(filtered.length===0){
+    document.getElementById('tableWrap').style.display='none';
+    document.getElementById('emptyState').style.display='block';
+    document.getElementById('emptyState').querySelector('p').textContent='No hay resultados para este filtro.';
+    return;
+  }
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('tableWrap').style.display='block';
+
+  // ── Build dynamic header ──
+  thead.innerHTML='';
+  const fixedHeaders=['#','Estado','Tipo match','ID Trámite','ID Mantenimiento','Nombre del Requerimiento'];
+  fixedHeaders.forEach(h=>{
+    const th=document.createElement('th'); th.textContent=h; thead.appendChild(th);
+  });
+  // paired columns
+  activeCols.forEach(col=>{
+    const th1=document.createElement('th');
+    th1.textContent=col+' (Portafolio)';
+    th1.className='th-port'; thead.appendChild(th1);
+    const th2=document.createElement('th');
+    th2.textContent=col+' (Área)';
+    th2.className='th-area'; thead.appendChild(th2);
+  });
+  // if no active cols selected, show a single "Diferencias" column
+  if(activeCols.length===0){
+    const th=document.createElement('th'); th.textContent='Campos con diferencias'; thead.appendChild(th);
+  }
+
+  const statusMap={
+    diff: ['badge-diff','🔶 Diferencias'],
+    match:['badge-match','✅ Sin cambios'],
+    only1:['badge-only1','📋 Solo portafolio'],
+    only2:['badge-only2','📄 Solo área']
+  };
+  const matchLabels={
+    id_tramite:'<span style="color:#1565c0;font-weight:600">ID Trámite</span>',
+    id_mant:   '<span style="color:#6a1b9a;font-weight:600">ID Mantenimiento</span>',
+    extra:     '<span style="color:#e65100;font-weight:600">Otro ID</span>',
+    nombre:    '<span style="color:#00838f;font-weight:600">🔤 Nombre</span>',
+    '-':       '<span style="color:#bbb">—</span>'
+  };
+
+  filtered.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    const eff=effectiveStatus(r);
+    const [badgeCls,badgeLabel]=statusMap[eff]||['',''];
+    let html=`<td style="color:#aaa;font-size:0.75rem">${i+1}</td>
+      <td><span class="badge ${badgeCls}">${badgeLabel}</span></td>
+      <td>${matchLabels[r.matchType]||''}</td>
+      <td style="font-family:monospace;font-size:0.78rem">${escHtml(r.tramite)}</td>
+      <td style="font-family:monospace;font-size:0.78rem">${escHtml(r.mant)}</td>
+      <td style="max-width:220px;font-size:0.78rem">${escHtml(r.nombre)}</td>`;
+
+    if(activeCols.length>0){
+      // paired column cells
+      activeCols.forEach(col=>{
+        const diffEntry=r.diffs.find(d=>d.col===col);
+        const vals=r.allVals[col];
+        if(diffEntry){
+          html+=`<td class="td-port">${escHtml(diffEntry.v1)}</td>`;
+          html+=`<td class="td-area">${escHtml(diffEntry.v2)}</td>`;
+        } else if(vals){
+          html+=`<td class="td-same">${escHtml(vals.v1)}</td>`;
+          html+=`<td class="td-same">${escHtml(vals.v2)}</td>`;
+        } else {
+          html+=`<td class="td-same" style="color:#ccc">—</td><td class="td-same" style="color:#ccc">—</td>`;
+        }
+      });
+    } else {
+      // fallback: compact diff cell
+      let diffHtml='';
+      if(r.diffs.length>0){
+        const vis=r.diffs.slice(0,3), hid=r.diffs.slice(3);
+        const uid='rx'+i;
+        vis.forEach(d=>{
+          diffHtml+=`<div class="change-item">
+            <span class="change-field">${escHtml(d.col)}:</span>
+            <span class="val-old">${escHtml(d.v1)}</span>
+            <span class="arrow">→</span>
+            <span class="val-new">${escHtml(d.v2)}</span></div>`;
+        });
+        if(hid.length){
+          diffHtml+=`<button class="expand-btn" onclick="toggleExtra('${uid}')">▼ Ver ${hid.length} más</button>`;
+          diffHtml+=`<div id="${uid}" class="hidden">`;
+          hid.forEach(d=>{
+            diffHtml+=`<div class="change-item">
+              <span class="change-field">${escHtml(d.col)}:</span>
+              <span class="val-old">${escHtml(d.v1)}</span>
+              <span class="arrow">→</span>
+              <span class="val-new">${escHtml(d.v2)}</span></div>`;
+          });
+          diffHtml+='</div>';
+        }
+      } else if(r.status==='match'){
+        diffHtml='<span style="color:#aaa;font-size:0.78rem">Todos los campos iguales</span>';
+      } else {
+        diffHtml='<span style="color:#aaa;font-size:0.78rem">Sin contraparte</span>';
+      }
+      html+=`<td class="field-changes">${diffHtml}</td>`;
+    }
+
+    tr.innerHTML=html;
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleExtra(uid){
+  const el=document.getElementById(uid), btn=el.previousElementSibling;
+  if(el.classList.contains('hidden')){
+    el.classList.remove('hidden');
+    btn.textContent=btn.textContent.replace('▼ Ver','▲ Ocultar').replace(' más','');
+  } else {
+    el.classList.add('hidden');
+    btn.textContent='▼ Ver '+el.querySelectorAll('.change-item').length+' más';
+  }
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  EXPORT TO EXCEL  (paired columns, green/red styling)
+// ═══════════════════════════════════════════════════════════
+function exportResults() {
+  if(!compResults.length) return;
+
+  const search=normalize(document.getElementById('searchBox').value);
+  const activeCols=getActiveCols();
+
+  const filtered=compResults.filter(r=>{
+    if(currentFilter!=='all'&&r.status!==currentFilter) return false;
+    if(search&&!normalize(r.tramite+' '+r.mant+' '+r.nombre).includes(search)) return false;
+    if(selectedFieldFilter.size>0&&r.status==='diff'){
+      if(!r.diffs.some(d=>selectedFieldFilter.has(d.col))) return false;
+    }
+    return true;
+  });
+
+  const matchTypeLabel={id_tramite:'ID Trámite',id_mant:'ID Mantenimiento',extra:'Otro ID',nombre:'Nombre','-':'—'};
+  const statusLabel={diff:'Con diferencias',match:'Sin cambios',only1:'Solo en portafolio',only2:'Solo en área'};
+
+  // ── Determine export columns ──
+  // If activeCols exist, use paired mode; else compact mode
+  const exportCols = activeCols.length>0 ? activeCols : allDiffCols;
+
+  // ── Build header row ──
+  const fixedH=['#','Estado','Tipo Match','ID Trámite','ID Mantenimiento','Nombre del Requerimiento'];
+  const headerRow=[...fixedH];
+  exportCols.forEach(col=>{
+    headerRow.push(col+' (Portafolio)');
+    headerRow.push(col+' (Área)');
+  });
+  if(exportCols.length===0){
+    headerRow.push('Diferencias');
+  }
+
+  const wsData=[headerRow];
+
+  filtered.forEach((r,i)=>{
+    const row=[i+1, statusLabel[r.status]||r.status, matchTypeLabel[r.matchType]||r.matchType, r.tramite, r.mant, r.nombre];
+    if(exportCols.length>0){
+      exportCols.forEach(col=>{
+        const diffE=r.diffs.find(d=>d.col===col);
+        const vals=r.allVals[col];
+        row.push(diffE?diffE.v1:(vals?vals.v1:''));
+        row.push(diffE?diffE.v2:(vals?vals.v2:''));
+      });
+    } else {
+      row.push(r.diffs.map(d=>d.col+': "'+d.v1+'" → "'+d.v2+'"').join(' | '));
+    }
+    wsData.push(row);
+  });
+
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(wsData);
+
+  // ── Column widths ──
+  const wCols=[4,20,15,18,20,40];
+  exportCols.forEach(()=>{ wCols.push(22,22); });
+  if(exportCols.length===0) wCols.push(80);
+  ws['!cols']=wCols.map(w=>({wch:w}));
+
+  // ── Cell styles — exact same colors as the app ──
+  // xlsx-js-style format: fill:{patternType:'solid',fgColor:{rgb:'RRGGBB'}}, font:{bold,color:{rgb:'RRGGBB'}}
+  const s = (fill, fontOpts={}) => ({
+    fill: { patternType:'solid', fgColor:{ rgb: fill } },
+    font: { bold: fontOpts.bold||false, color:{ rgb: fontOpts.color||'333333' } }
+  });
+
+  const HDR_BLUE  = '1A237E';  // thead fixed  — dark blue  (same as app #1a237e)
+  const HDR_GREEN = '1B5E20';  // th-port      — dark green (same as app #1b5e20)
+  const HDR_RED   = 'B71C1C';  // th-area      — dark red   (same as app #b71c1c)
+  const CELL_PORT = 'F1F8E9';  // td-port      — light green
+  const CELL_AREA = 'FFEBEE';  // td-area      — light red
+
+  // Freeze top row
+  ws['!freeze'] = {xSplit:0, ySplit:1, topLeftCell:'A2', activeCell:'A2', sqref:'A2'};
+
+  // Style fixed header row
+  fixedH.forEach((_,ci)=>{
+    const addr=XLSX.utils.encode_cell({r:0,c:ci});
+    if(ws[addr]) ws[addr].s = s(HDR_BLUE, {bold:true, color:'FFFFFF'});
+  });
+
+  if(exportCols.length>0){
+    const fixedCount=fixedH.length; // 6
+
+    exportCols.forEach((col,ci)=>{
+      const portColIdx=fixedCount+ci*2;
+      const areaColIdx=fixedCount+ci*2+1;
+      const portAddr=XLSX.utils.encode_cell({r:0,c:portColIdx});
+      const areaAddr=XLSX.utils.encode_cell({r:0,c:areaColIdx});
+      if(!ws[portAddr]) ws[portAddr]={v:col+' (Portafolio)',t:'s'};
+      if(!ws[areaAddr]) ws[areaAddr]={v:col+' (Área)',t:'s'};
+      ws[portAddr].s = s(HDR_GREEN, {bold:true, color:'FFFFFF'});
+      ws[areaAddr].s = s(HDR_RED,   {bold:true, color:'FFFFFF'});
+
+      // Style data rows
+      filtered.forEach((r,ri)=>{
+        const dataRow=ri+1;
+        const isDiff=!!r.diffs.find(d=>d.col===col);
+        const pAddr=XLSX.utils.encode_cell({r:dataRow,c:portColIdx});
+        const aAddr=XLSX.utils.encode_cell({r:dataRow,c:areaColIdx});
+        if(isDiff){
+          if(ws[pAddr]) ws[pAddr].s = s(CELL_PORT);
+          if(ws[aAddr]) ws[aAddr].s = s(CELL_AREA);
+        }
+      });
+    });
+  }
+
+  // Status cell colors (col 1 = Estado)
+  const STATUS_S = {
+    'Con diferencias':    s('FFF3E0', {bold:true, color:'E65100'}),
+    'Sin cambios':        s('E8F5E9', {bold:true, color:'2E7D32'}),
+    'Solo en portafolio': s('E3F2FD', {bold:true, color:'0D47A1'}),
+    'Solo en área':       s('F3E5F5', {bold:true, color:'4A148C'}),
+  };
+  filtered.forEach((r,ri)=>{
+    const addr=XLSX.utils.encode_cell({r:ri+1, c:1});
+    const st=STATUS_S[statusLabel[r.status]];
+    if(ws[addr]&&st) ws[addr].s=st;
+  });
+
+  XLSX.utils.book_append_sheet(wb,ws,'Comparación');
+  XLSX.writeFile(wb,'Comparacion_Portafolio_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+</script>
+</body>
+</html>
