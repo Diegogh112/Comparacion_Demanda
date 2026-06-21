@@ -457,9 +457,22 @@ function readWorkbook(fileInput, sheetSel, infoEl, cardEl, num) {
       wb.SheetNames.forEach(s => {
         const o=document.createElement('option');
         o.value=s; o.text=s;
-        if(s.toLowerCase().includes('demanda')||s.toLowerCase().includes('cartera')) o.selected=true;
         sheetSel.appendChild(o);
       });
+      // Select best matching sheet by priority
+      const sheetNames = wb.SheetNames;
+      const priority = [
+        s => /demanda\s*t[aá]ctica/i.test(s),
+        s => /t[aá]ctica/i.test(s),
+        s => /demanda/i.test(s),
+        s => /cartera/i.test(s),
+      ];
+      let chosen = null;
+      for (const test of priority) {
+        chosen = sheetNames.find(test);
+        if (chosen) break;
+      }
+      if (chosen) sheetSel.value = chosen;
 
       infoEl.textContent='✔ '+file.name; infoEl.className='file-info ok';
       cardEl.classList.add('loaded');
