@@ -206,6 +206,23 @@
     background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   }
   .empty-state p { font-size: 0.95rem; margin-top: 14px; }
+  /* ── Tabs ── */
+  .tab-nav {
+    display: flex; gap: 0; padding: 0 28px;
+    background: #1a202c; border-bottom: 3px solid #7b1113;
+  }
+  .tab-btn {
+    padding: 12px 24px; font-size: 0.83rem; font-weight: 700;
+    color: rgba(255,255,255,0.6); background: none; border: none;
+    cursor: pointer; border-bottom: 3px solid transparent;
+    margin-bottom: -3px; transition: all 0.2s; letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .tab-btn:hover { color: rgba(255,255,255,0.9); }
+  .tab-btn.active { color: white; border-bottom-color: #fc8181; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
   #loading { text-align: center; padding: 40px; color: #2b6cb0; font-size: 0.88rem; display: none; }
 </style>
 </head>
@@ -221,7 +238,12 @@
   </div>
 </header>
 
-<!-- ── UPLOAD ── -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('demanda',this)">📋 Portafolio vs Área</button>
+  <button class="tab-btn" onclick="switchTab('backlog',this)">📑 Portafolio vs Backlog</button>
+</div>
+
+<div id="tab-demanda" class="tab-pane active">
 <div class="upload-section">
   <div class="upload-card" id="card1">
     <h3>📋 Portafolio de Demanda (Principal)</h3>
@@ -385,6 +407,144 @@
     </table>
   </div>
 </div>
+
+</div><!-- /tab-demanda -->
+
+<!-- ══════════════════════════════════════════════════════════
+     TAB: PORTAFOLIO vs BACKLOG
+═══════════════════════════════════════════════════════════ -->
+<div id="tab-backlog" class="tab-pane">
+
+<div class="upload-section">
+  <div class="upload-card" id="b-card1">
+    <h3>📋 Portafolio de Demanda (Principal)</h3>
+    <label for="b-file1">📂 Seleccionar archivo Excel (.xlsx / .xlsm / .xls)</label>
+    <input type="file" id="b-file1" accept=".xlsx,.xlsm,.xls">
+    <div class="file-info" id="b-info1">Sin archivo cargado</div>
+    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div class="config-group" style="min-width:140px;"><label>Hoja</label>
+        <select id="b-sheet1" onchange="bOnSheetChange(1)"><option>-- carga archivo --</option></select></div>
+      <div class="config-group" style="min-width:160px;"><label>Tabla (opcional)</label>
+        <select id="b-table1"><option value="">-- sin tabla --</option></select></div>
+    </div>
+  </div>
+  <div class="upload-card" id="b-card2">
+    <h3>📑 Backlog de Requerimientos</h3>
+    <label for="b-file2">📂 Seleccionar archivo Excel (.xlsx / .xlsm / .xls)</label>
+    <input type="file" id="b-file2" accept=".xlsx,.xlsm,.xls">
+    <div class="file-info" id="b-info2">Sin archivo cargado</div>
+    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div class="config-group" style="min-width:140px;"><label>Hoja</label>
+        <select id="b-sheet2" onchange="bOnSheetChange(2)"><option>-- carga archivo --</option></select></div>
+      <div class="config-group" style="min-width:160px;"><label>Tabla (opcional)</label>
+        <select id="b-table2"><option value="">-- sin tabla --</option></select></div>
+    </div>
+  </div>
+</div>
+
+<div class="id-cols-panel" id="b-idColsPanel">
+  <h3>⚙️ Columnas de identificación</h3>
+  <p class="id-cols-desc">Las columnas con borde verde fueron detectadas automáticamente.</p>
+  <div class="id-cols-grid">
+    <div class="id-cols-side port">
+      <h4>📋 PORTAFOLIO DE DEMANDA</h4>
+      <div class="id-col-row"><label>ID Trámite</label>
+        <select id="b-col_tramite1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
+      <div class="id-col-row"><label>ID Mantenimiento</label>
+        <select id="b-col_mant1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
+      <div class="id-col-row"><label>Nombre del Requerimiento</label>
+        <select id="b-col_nombre1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
+      <div class="id-col-row" id="b-extra-id-row-port" style="display:none">
+        <label>Otro identificador</label><select id="b-col_extra1"></select></div>
+    </div>
+    <div class="id-cols-divider"></div>
+    <div class="id-cols-side area">
+      <h4>📑 BACKLOG DE REQUERIMIENTOS</h4>
+      <div class="id-col-row"><label>N° Trámite</label>
+        <select id="b-col_tramite2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
+      <div class="id-col-row"><label>ID Mantenimiento</label>
+        <select id="b-col_mant2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
+      <div class="id-col-row"><label>Nombre</label>
+        <select id="b-col_nombre2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
+      <div class="id-col-row" id="b-extra-id-row-area" style="display:none">
+        <label>Otro identificador</label><select id="b-col_extra2"></select></div>
+    </div>
+  </div>
+  <div style="margin-top:14px;">
+    <button class="chip-action-btn" id="b-btnAddExtra" onclick="bToggleExtraId()">+ Añadir otro identificador</button>
+  </div>
+</div>
+
+<div class="col-map-panel" id="b-colMapPanel">
+  <h3>🔗 Vincular columnas equivalentes</h3>
+  <p class="col-map-desc">Si un campo del Portafolio y uno del Backlog tienen el mismo dato con distinto nombre, vincúlalos aquí.</p>
+  <div class="col-map-rows" id="b-colMapRows"></div>
+  <button class="col-map-add" onclick="bAddMappingRow()">+ Añadir vínculo</button>
+</div>
+
+<div class="field-filter-panel" id="b-fieldFilterPanel">
+  <h3>🔎 Filtrar campos a mostrar</h3>
+  <p class="field-filter-desc">Selecciona los campos que quieres ver. Si no marcas ninguno se muestran todos.</p>
+  <div class="field-chips-wrap" id="b-fieldChips"></div>
+  <div class="field-filter-actions">
+    <button class="chip-action-btn" onclick="bSelectAllChips(true)">Seleccionar todos</button>
+    <button class="chip-action-btn" onclick="bSelectAllChips(false)">Limpiar selección</button>
+  </div>
+</div>
+
+<div style="display:flex;gap:10px;padding:0 28px 20px;flex-wrap:wrap;">
+  <button class="compare-btn" id="b-btnCompare" disabled onclick="bRunComparison()">▶ Comparar ahora</button>
+  <button class="compare-btn" id="b-btnExport" onclick="bExportResults()"
+    style="background:linear-gradient(135deg,#276749,#38a169);display:none">⬇ Exportar a Excel</button>
+</div>
+
+<div id="b-loading" style="text-align:center;padding:40px;color:#2b6cb0;font-size:0.88rem;display:none">⏳ Procesando comparación...</div>
+
+<div class="summary-bar" id="b-summaryBar" style="display:none">
+  <div class="stat-chip stat-diff" onclick="bSetFilterFromStat('diff',this)">
+    <div><div class="num" id="b-cnt-diff">0</div><div class="lbl">Con diferencias</div></div>
+  </div>
+  <div class="stat-chip stat-match" onclick="bSetFilterFromStat('match',this)">
+    <div><div class="num" id="b-cnt-match">0</div><div class="lbl">Sin cambios</div></div>
+  </div>
+  <div class="stat-chip stat-name" onclick="bSetFilterFromStat('name',this)">
+    <div><div class="num" id="b-cnt-name">0</div><div class="lbl">Match por nombre</div></div>
+  </div>
+  <div class="stat-chip stat-only1" onclick="bSetFilterFromStat('only1',this)">
+    <div><div class="num" id="b-cnt-only1">0</div><div class="lbl">Solo en portafolio</div></div>
+  </div>
+  <div class="stat-chip stat-only2" onclick="bSetFilterFromStat('only2',this)">
+    <div><div class="num" id="b-cnt-only2">0</div><div class="lbl">Solo en backlog</div></div>
+  </div>
+</div>
+
+<div class="filters" id="b-filterBar" style="display:none">
+  <button class="filter-btn active" onclick="bSetFilter('all','all',this)">Todos</button>
+  <button class="filter-btn" style="border-color:#ed8936;color:#c05621" onclick="bSetFilter('status','diff',this)">🔶 Con diferencias</button>
+  <button class="filter-btn" style="border-color:#48bb78;color:#276749" onclick="bSetFilter('status','match',this)">✅ Sin cambios</button>
+  <button class="filter-btn" style="border-color:#4299e1;color:#2b6cb0" onclick="bSetFilter('matchType','nombre',this)">🔤 Match por nombre</button>
+  <button class="filter-btn" style="border-color:#667eea;color:#434190" onclick="bSetFilter('status','only1',this)">📋 Solo en portafolio</button>
+  <button class="filter-btn" style="border-color:#9f7aea;color:#553c9a" onclick="bSetFilter('status','only2',this)">📑 Solo en backlog</button>
+  <input class="search-box" type="text" id="b-searchBox" placeholder="🔍 Buscar por ID, nombre..." oninput="bApplyFilters()">
+</div>
+
+<div class="results-container">
+  <div class="empty-state" id="b-emptyState">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/>
+      <line x1="8" y1="12" x2="16" y2="12"/>
+    </svg>
+    <p>Carga los dos archivos y pulsa <b>Comparar</b> para ver las diferencias</p>
+  </div>
+  <div id="b-tableWrap" style="display:none; overflow-x:auto;">
+    <table id="b-resultsTable">
+      <thead><tr id="b-tableHead"></tr></thead>
+      <tbody id="b-tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /tab-backlog -->
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -1401,6 +1561,476 @@ function exportResults() {
 
   XLSX.utils.book_append_sheet(wb,ws,'Comparación');
   XLSX.writeFile(wb,'Comparacion_Portafolio_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════════════════════
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BACKLOG TAB — CONFIG
+// ═══════════════════════════════════════════════════════════
+const IMPORTANT_COLS_BACKLOG = [
+  'ID','N° Trámite','Nombre','Gerencia','Subgerencia','Sección',
+  'Líder Usuario','Documento (STD)','Área Responsable TI','Líder técnico',
+  'Tipo de Atención','Estado de la Demanda','ID MANTENIMIENTO','Gestor',
+  'ESTADO TI','ESTADO CQ'
+];
+
+// Backlog state (mirrors demanda state but prefixed b)
+let bWb1=null, bWb2=null;
+let bData1=[], bData2=[];
+let bHeaders1=[], bHeaders2=[];
+let bCompResults=[], bAllDiffCols=[];
+let bSelectedFieldFilter=new Set();
+let bCurrentFilterType='all', bCurrentFilterVal='all';
+let bColMappings=[];
+let bTableMap1=new Map(), bTableMap2=new Map();
+
+const BTRAMITE_KEYS  = ['trámite','tramite','n° trámite','n trámite'];
+const BMANT_KEYS     = ['mantenimiento','mant','id mantenimiento'];
+const BNOMBRE_KEYS   = ['nombre del requerimiento','nombre requerimiento','nombre','requerimiento'];
+
+// ── File loading ──
+function bReadWorkbook(fileInput, sheetSel, infoEl, cardEl, num) {
+  const file = fileInput.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const buf = e.target.result;
+      const wb = XLSX.read(buf, {type:'array', cellDates:true});
+      if(num===1) bWb1=wb; else bWb2=wb;
+      const tMap = await parseTablesFromZip(buf);
+      if(num===1) bTableMap1=tMap; else bTableMap2=tMap;
+      sheetSel.innerHTML='';
+      wb.SheetNames.forEach(s=>{
+        const o=document.createElement('option'); o.value=s; o.text=s;
+        sheetSel.appendChild(o);
+      });
+      // Priority: Gestión Backlog / Demanda Táctica
+      const prio=[
+        s=>/gesti[oó]n\s*backlog/i.test(s),
+        s=>/backlog/i.test(s),
+        s=>/demanda\s*t[aá]ctica/i.test(s),
+        s=>/demanda/i.test(s),
+        s=>/cartera/i.test(s),
+      ];
+      let chosen=null;
+      for(const t of prio){ chosen=wb.SheetNames.find(t); if(chosen) break; }
+      if(chosen) sheetSel.value=chosen;
+      infoEl.textContent='✔ '+file.name; infoEl.className='file-info ok';
+      cardEl.classList.add('loaded');
+      bOnSheetChange(num);
+    } catch(err){ infoEl.textContent='❌ '+err.message; infoEl.className='file-info'; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function bOnSheetChange(num) {
+  const wb=num===1?bWb1:bWb2; if(!wb) return;
+  const tMap=num===1?bTableMap1:bTableMap2;
+  const sn=document.getElementById('b-sheet'+num).value;
+  const tableSel=document.getElementById('b-table'+num);
+  tableSel.innerHTML='<option value="">-- sin tabla (hoja completa) --</option>';
+  const tables=getSheetTables(wb,sn,tMap);
+  tables.forEach(t=>{
+    const o=document.createElement('option'); o.value=JSON.stringify(t);
+    o.text=t.name+(t.ref?'  ['+t.ref+']':'');
+    if(/backlog|cartera|demanda/i.test(t.name)) o.selected=true;
+    tableSel.appendChild(o);
+  });
+  bLoadSheetData(num);
+}
+
+function bLoadSheetData(num) {
+  const wb=num===1?bWb1:bWb2; if(!wb) return;
+  const sn=document.getElementById('b-sheet'+num).value;
+  const ws=wb.Sheets[sn];
+  const tableVal=document.getElementById('b-table'+num).value;
+  let hdrs=[], rows=[];
+  if(tableVal){
+    const ti=JSON.parse(tableVal); const ref=ti.ref;
+    if(ref){
+      const allRows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,range:ref});
+      hdrs=(allRows[0]||[]).map(h=>h===null||h===undefined?'':String(h));
+      const range=XLSX.utils.decode_range(ref);
+      rows=buildRows(ws,allRows.slice(1),range.s.r+1,range.s.c,hdrs);
+    }
+  }
+  if(!hdrs.length){
+    const raw=XLSX.utils.sheet_to_json(ws,{header:1,raw:true});
+    const hi=detectHeaderRow(raw);
+    hdrs=(raw[hi]||[]).map(h=>h===null||h===undefined?'':String(h));
+    rows=buildRows(ws,raw.slice(hi+1),hi+1,0,hdrs);
+  }
+  rows=rows.filter(r=>r.some(v=>v!==undefined&&v!==null&&v!==''));
+  if(num===1){bHeaders1=hdrs;bData1=rows;}else{bHeaders2=hdrs;bData2=rows;}
+  bPopulateColSelectors(num,hdrs);
+  bMaybeShowIdPanel();
+  bCheckReady();
+}
+
+function bPopulateColSelectors(num,hdrs){
+  const ids=num===1?['b-col_tramite1','b-col_mant1','b-col_nombre1']:['b-col_tramite2','b-col_mant2','b-col_nombre2'];
+  const keys=[BTRAMITE_KEYS,BMANT_KEYS,BNOMBRE_KEYS];
+  ids.forEach((id,i)=>{
+    const sel=document.getElementById(id); if(!sel) return;
+    sel.innerHTML='<option value="">-- ninguna --</option>';
+    hdrs.forEach((h,idx)=>{ if(!h) return; const o=document.createElement('option'); o.value=idx; o.text=h; sel.appendChild(o); });
+    const m=autoMatchCol(hdrs,keys[i]);
+    if(m>=0){sel.value=String(m);sel.classList.add('auto-matched');}
+    else{sel.value='';sel.classList.remove('auto-matched');}
+  });
+  const ex=document.getElementById('b-col_extra'+num);
+  if(ex){ const prev=ex.value; ex.innerHTML='<option value="">-- ninguna --</option>';
+    hdrs.forEach((h,idx)=>{ if(!h) return; const o=document.createElement('option'); o.value=idx; o.text=h; ex.appendChild(o); });
+    if(prev) ex.value=prev; }
+}
+
+function bMaybeShowIdPanel(){
+  const h=bHeaders1.length>0||bHeaders2.length>0;
+  document.getElementById('b-idColsPanel').style.display=h?'block':'none';
+  const b=bHeaders1.length>0&&bHeaders2.length>0;
+  document.getElementById('b-colMapPanel').style.display=b?'block':'none';
+  if(b) bRefreshMappingSelects();
+}
+function bCheckReady(){ document.getElementById('b-btnCompare').disabled=!(bData1.length&&bData2.length); }
+function bToggleExtraId(){
+  const rp=document.getElementById('b-extra-id-row-port');
+  const ra=document.getElementById('b-extra-id-row-area');
+  const btn=document.getElementById('b-btnAddExtra');
+  const h=rp.style.display==='none';
+  rp.style.display=h?'flex':'none'; ra.style.display=h?'flex':'none';
+  btn.textContent=h?'✕ Quitar otro identificador':'+ Añadir otro identificador';
+  if(!h){document.getElementById('b-col_extra1').value='';document.getElementById('b-col_extra2').value='';}
+}
+
+document.getElementById('b-file1').addEventListener('change',function(){
+  bReadWorkbook(this,document.getElementById('b-sheet1'),document.getElementById('b-info1'),document.getElementById('b-card1'),1);
+});
+document.getElementById('b-file2').addEventListener('change',function(){
+  bReadWorkbook(this,document.getElementById('b-sheet2'),document.getElementById('b-info2'),document.getElementById('b-card2'),2);
+});
+document.getElementById('b-table1').addEventListener('change',()=>{if(bWb1)bLoadSheetData(1);});
+document.getElementById('b-table2').addEventListener('change',()=>{if(bWb2)bLoadSheetData(2);});
+</script>
+
+<script>
+// ── Backlog column mappings ──
+function bAddMappingRow(c1='',c2=''){
+  const wrap=document.getElementById('b-colMapRows');
+  const row=document.createElement('div'); row.className='col-map-row';
+  const s1=bBuildMappingSelect(bHeaders1,c1,'port');
+  const arr=document.createElement('div'); arr.className='col-map-arrow'; arr.textContent='↔';
+  const s2=bBuildMappingSelect(bHeaders2,c2,'area');
+  const del=document.createElement('button'); del.className='col-map-del'; del.textContent='✕';
+  del.onclick=()=>{row.remove();bSyncMappings();};
+  s1.onchange=s2.onchange=bSyncMappings;
+  row.appendChild(s1);row.appendChild(arr);row.appendChild(s2);row.appendChild(del);
+  wrap.appendChild(row); bSyncMappings();
+}
+function bBuildMappingSelect(headers,selVal,side){
+  const sel=document.createElement('select'); sel.dataset.side=side;
+  const e=document.createElement('option'); e.value=''; e.text='-- elegir columna --'; sel.appendChild(e);
+  headers.forEach((h,i)=>{ if(!h) return; const o=document.createElement('option'); o.value=h; o.text=h; if(normalize(h)===normalize(selVal)) o.selected=true; sel.appendChild(o); });
+  return sel;
+}
+function bSyncMappings(){
+  bColMappings=[];
+  document.querySelectorAll('#b-colMapRows .col-map-row').forEach(row=>{
+    const sels=row.querySelectorAll('select');
+    const c1=sels[0]?sels[0].value:'', c2=sels[1]?sels[1].value:'';
+    if(c1&&c2) bColMappings.push({col1:c1,col2:c2});
+  });
+}
+function bRefreshMappingSelects(){
+  document.querySelectorAll('#b-colMapRows .col-map-row').forEach(row=>{
+    const sels=row.querySelectorAll('select'); if(!sels[0]||!sels[1]) return;
+    const v1=sels[0].value,v2=sels[1].value;
+    const n1=bBuildMappingSelect(bHeaders1,v1,'port');
+    const n2=bBuildMappingSelect(bHeaders2,v2,'area');
+    n1.onchange=n2.onchange=bSyncMappings; sels[0].replaceWith(n1); sels[1].replaceWith(n2);
+  });
+}
+
+// ── Field chips ──
+function bBuildFieldChips(){
+  const wrap=document.getElementById('b-fieldChips'); wrap.innerHTML='';
+  bAllDiffCols.forEach(col=>{
+    const chip=document.createElement('span'); chip.className='field-chip';
+    chip.textContent=col; chip.dataset.col=col;
+    chip.onclick=()=>bToggleChip(chip); wrap.appendChild(chip);
+  });
+  document.getElementById('b-fieldFilterPanel').style.display=bAllDiffCols.length?'block':'none';
+}
+function bToggleChip(chip){
+  const col=chip.dataset.col;
+  if(bSelectedFieldFilter.has(col)){bSelectedFieldFilter.delete(col);chip.classList.remove('active');}
+  else{bSelectedFieldFilter.add(col);chip.classList.add('active');}
+  bApplyFilters();
+}
+function bSelectAllChips(sel){
+  document.querySelectorAll('#b-fieldChips .field-chip').forEach(ch=>{
+    if(sel){bSelectedFieldFilter.add(ch.dataset.col);ch.classList.add('active');}
+    else{bSelectedFieldFilter.delete(ch.dataset.col);ch.classList.remove('active');}
+  }); bApplyFilters();
+}
+
+// ── Comparison ──
+function bRunComparison(){
+  document.getElementById('b-loading').style.display='block';
+  ['b-tableWrap','b-emptyState','b-summaryBar','b-filterBar','b-fieldFilterPanel'].forEach(id=>document.getElementById(id).style.display='none');
+  setTimeout(()=>{ try{bDoComparison();}catch(e){alert('Error: '+e.message);document.getElementById('b-loading').style.display='none';} },50);
+}
+
+function bGetIdx(id){ const v=document.getElementById(id).value; return v===''?-1:parseInt(v); }
+
+function bEffectiveStatus(r){
+  if(r.status==='diff'&&bSelectedFieldFilter.size>0){
+    return r.diffs.some(d=>bSelectedFieldFilter.has(d.col))?'diff':'match';
+  }
+  return r.status;
+}
+
+function bDoComparison(){
+  const iT1=bGetIdx('b-col_tramite1'),iM1=bGetIdx('b-col_mant1'),iN1=bGetIdx('b-col_nombre1'),iX1=bGetIdx('b-col_extra1');
+  const iT2=bGetIdx('b-col_tramite2'),iM2=bGetIdx('b-col_mant2'),iN2=bGetIdx('b-col_nombre2'),iX2=bGetIdx('b-col_extra2');
+
+  const byT2=new Map(),byM2=new Map(),byN2=new Map(),byX2=new Map(),matched2=new Set();
+  bData2.forEach((row,i)=>{
+    const t=iT2>=0?normalize(row[iT2]):'', m=iM2>=0?normalize(row[iM2]):'';
+    const n=iN2>=0?normalize(row[iN2]):'', x=iX2>=0?normalize(row[iX2]):'';
+    if(t) byT2.set(t,i); if(m) byM2.set(m,i); if(n) byN2.set(n,i); if(x) byX2.set(x,i);
+  });
+
+  // Build common cols
+  const commonCols=[];
+  IMPORTANT_COLS_BACKLOG.forEach(col=>{
+    const i1=bHeaders1.findIndex(h=>normalize(h)===normalize(col));
+    const i2=bHeaders2.findIndex(h=>normalize(h)===normalize(col));
+    if(i1>=0&&i2>=0) commonCols.push({col,i1,i2});
+  });
+  bColMappings.forEach(({col1,col2})=>{
+    if(!col1||!col2) return;
+    const i1=bHeaders1.findIndex(h=>normalize(h)===normalize(col1));
+    const i2=bHeaders2.findIndex(h=>normalize(h)===normalize(col2));
+    if(i1<0||i2<0) return;
+    const dup=commonCols.findIndex(c=>c.i1===i1||c.i2===i2);
+    if(dup>=0) commonCols.splice(dup,1);
+    commonCols.push({col:col1,i1,i2});
+  });
+  const usedI2=new Set(commonCols.map(c=>c.i2)),usedI1=new Set(commonCols.map(c=>c.i1));
+  bHeaders2.forEach((h2,i2)=>{
+    if(!h2||usedI2.has(i2)) return;
+    if(commonCols.find(c=>normalize(c.col)===normalize(h2))) return;
+    const i1=bHeaders1.findIndex(h=>normalize(h)===normalize(h2));
+    if(i1>=0&&!usedI1.has(i1)) commonCols.push({col:h2,i1,i2});
+  });
+
+  const results=[];
+  bData1.forEach(row1=>{
+    const t1=iT1>=0?normalize(row1[iT1]):'',m1=iM1>=0?normalize(row1[iM1]):'';
+    const n1=iN1>=0?normalize(row1[iN1]):'',x1=iX1>=0?normalize(row1[iX1]):'';
+    let r2i=-1,mType='';
+    if(t1&&byT2.has(t1)){r2i=byT2.get(t1);mType='id_tramite';}
+    else if(m1&&byM2.has(m1)){r2i=byM2.get(m1);mType='id_mant';}
+    else if(x1&&byX2.has(x1)){r2i=byX2.get(x1);mType='extra';}
+    else if(n1&&byN2.has(n1)){r2i=byN2.get(n1);mType='nombre';}
+    if(r2i===-1){
+      results.push({status:'only1',matchType:'-',tramite:fmtVal(iT1>=0?row1[iT1]:''),mant:fmtVal(iM1>=0?row1[iM1]:''),nombre:fmtVal(iN1>=0?row1[iN1]:''),diffs:[],allVals:{},row1,row2:null});
+      return;
+    }
+    matched2.add(r2i);
+    const row2=bData2[r2i]; const diffs=[],allVals={};
+    commonCols.forEach(({col,i1,i2})=>{
+      const v1=fmtVal(row1[i1]),v2=fmtVal(row2[i2]);
+      allVals[col]={v1,v2};
+      if(!valuesEqual(v1,v2)) diffs.push({col,v1,v2});
+    });
+    results.push({status:diffs.length>0?'diff':'match',matchType:mType,
+      tramite:fmtVal(iT1>=0?row1[iT1]:''),mant:fmtVal(iM1>=0?row1[iM1]:''),nombre:fmtVal(iN1>=0?row1[iN1]:''),
+      diffs,allVals,row1,row2});
+  });
+  bData2.forEach((row2,i2)=>{
+    if(matched2.has(i2)) return;
+    results.push({status:'only2',matchType:'-',tramite:fmtVal(iT2>=0?row2[iT2]:''),mant:fmtVal(iM2>=0?row2[iM2]:''),nombre:fmtVal(iN2>=0?row2[iN2]:''),diffs:[],allVals:{},row1:null,row2});
+  });
+  bCompResults=results;
+  const diffSet=new Set(); results.forEach(r=>r.diffs.forEach(d=>diffSet.add(d.col)));
+  bAllDiffCols=IMPORTANT_COLS_BACKLOG.filter(c=>diffSet.has(c));
+  bSelectedFieldFilter=new Set();
+  bBuildFieldChips();
+  bRenderResults();
+  document.getElementById('b-loading').style.display='none';
+}
+</script>
+
+<script>
+// ── Backlog render & filters ──
+function bRenderResults(){
+  document.getElementById('b-summaryBar').style.display='flex';
+  document.getElementById('b-filterBar').style.display='flex';
+  document.getElementById('b-btnExport').style.display='inline-block';
+  bApplyFilters();
+}
+function bSetFilter(type,val,btn){
+  bCurrentFilterType=type; bCurrentFilterVal=val;
+  document.querySelectorAll('#b-filterBar .filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  bApplyFilters();
+}
+function bSetFilterFromStat(val,chip){
+  const isMatchType=val==='name';
+  const type=isMatchType?'matchType':'status';
+  const rv=isMatchType?'nombre':val;
+  if(bCurrentFilterType===type&&bCurrentFilterVal===rv){
+    bCurrentFilterType='all';bCurrentFilterVal='all';
+    document.querySelectorAll('#b-filterBar .filter-btn').forEach(b=>b.classList.remove('active'));
+    const first=document.querySelector('#b-filterBar .filter-btn'); if(first) first.classList.add('active');
+  } else {
+    bCurrentFilterType=type;bCurrentFilterVal=rv;
+    document.querySelectorAll('#b-filterBar .filter-btn').forEach(b=>b.classList.remove('active'));
+  }
+  bApplyFilters();
+}
+function bGetActiveCols(){ return bSelectedFieldFilter.size===0?bAllDiffCols:bAllDiffCols.filter(c=>bSelectedFieldFilter.has(c)); }
+
+function bApplyFilters(){
+  const search=normalize(document.getElementById('b-searchBox').value);
+  const activeCols=bGetActiveCols();
+  // counters
+  const cnt={diff:0,match:0,name:0,only1:0,only2:0};
+  bCompResults.forEach(r=>{
+    const eff=bEffectiveStatus(r);
+    if(eff==='diff') cnt.diff++; if(eff==='match') cnt.match++;
+    if(eff==='only1') cnt.only1++; if(eff==='only2') cnt.only2++;
+    if(r.matchType==='nombre') cnt.name++;
+  });
+  ['diff','match','name','only1','only2'].forEach(k=>{ const el=document.getElementById('b-cnt-'+k); if(el) el.textContent=cnt[k]; });
+
+  const filtered=bCompResults.filter(r=>{
+    const eff=bEffectiveStatus(r);
+    if(bCurrentFilterType==='status'&&eff!==bCurrentFilterVal) return false;
+    if(bCurrentFilterType==='matchType'&&r.matchType!==bCurrentFilterVal) return false;
+    if(search&&!normalize(r.tramite+' '+r.mant+' '+r.nombre).includes(search)) return false;
+    return true;
+  });
+
+  const tbody=document.getElementById('b-tableBody');
+  const thead=document.getElementById('b-tableHead');
+  tbody.innerHTML='';
+
+  if(filtered.length===0){
+    document.getElementById('b-tableWrap').style.display='none';
+    document.getElementById('b-emptyState').style.display='block';
+    document.getElementById('b-emptyState').querySelector('p').textContent='No hay resultados para este filtro.';
+    return;
+  }
+  document.getElementById('b-emptyState').style.display='none';
+  document.getElementById('b-tableWrap').style.display='block';
+
+  thead.innerHTML='';
+  const fixedH=['#','Estado','Tipo match','ID Trámite','ID Mantenimiento','Nombre'];
+  fixedH.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; thead.appendChild(th); });
+  activeCols.forEach(col=>{
+    const t1=document.createElement('th'); t1.textContent=col+' (Portafolio)'; t1.className='th-port'; thead.appendChild(t1);
+    const t2=document.createElement('th'); t2.textContent=col+' (Backlog)';    t2.className='th-area'; thead.appendChild(t2);
+  });
+  if(activeCols.length===0){ const th=document.createElement('th'); th.textContent='Campos con diferencias'; thead.appendChild(th); }
+
+  const statusMap={diff:['badge-diff','🔶 Diferencias'],match:['badge-match','✅ Sin cambios'],only1:['badge-only1','📋 Solo portafolio'],only2:['badge-only2','📑 Solo backlog']};
+  const matchLabels={id_tramite:'<span class="match-chip match-tramite">ID Trámite</span>',id_mant:'<span class="match-chip match-mant">ID Mantenimiento</span>',extra:'<span class="match-chip match-extra">Otro ID</span>',nombre:'<span class="match-chip match-nombre">🔤 Nombre</span>','-':'<span class="match-none">—</span>'};
+
+  filtered.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    const eff=bEffectiveStatus(r);
+    const [bc,bl]=statusMap[eff]||['',''];
+    let html=`<td style="color:#a0aec0;font-size:0.73rem">${i+1}</td>
+      <td><span class="badge ${bc}">${bl}</span></td>
+      <td>${matchLabels[r.matchType]||''}</td>
+      <td style="font-family:monospace;font-size:0.76rem">${escHtml(r.tramite)}</td>
+      <td style="font-family:monospace;font-size:0.76rem">${escHtml(r.mant)}</td>
+      <td style="max-width:220px;font-size:0.76rem">${escHtml(r.nombre)}</td>`;
+    if(activeCols.length>0){
+      activeCols.forEach(col=>{
+        const de=r.diffs.find(d=>d.col===col); const vals=r.allVals[col];
+        if(de){ html+=`<td class="td-port">${escHtml(de.v1)}</td><td class="td-area">${escHtml(de.v2)}</td>`; }
+        else if(vals){ html+=`<td class="td-same">${escHtml(vals.v1)}</td><td class="td-same">${escHtml(vals.v2)}</td>`; }
+        else{ html+=`<td class="td-same" style="color:#cbd5e0">—</td><td class="td-same" style="color:#cbd5e0">—</td>`; }
+      });
+    } else {
+      let dh='';
+      if(r.diffs.length>0){
+        const vis=r.diffs.slice(0,3),hid=r.diffs.slice(3),uid='br'+i;
+        vis.forEach(d=>{ dh+=`<div class="change-item"><span class="change-field">${escHtml(d.col)}:</span><span class="val-old">${escHtml(d.v1)}</span><span class="arrow">→</span><span class="val-new">${escHtml(d.v2)}</span></div>`; });
+        if(hid.length){ dh+=`<button class="expand-btn" onclick="toggleExtra('${uid}')">▼ Ver ${hid.length} más</button><div id="${uid}" class="hidden">`;
+          hid.forEach(d=>{ dh+=`<div class="change-item"><span class="change-field">${escHtml(d.col)}:</span><span class="val-old">${escHtml(d.v1)}</span><span class="arrow">→</span><span class="val-new">${escHtml(d.v2)}</span></div>`; });
+          dh+='</div>'; }
+      } else if(eff==='match'){ dh='<span style="color:#a0aec0;font-size:0.73rem">Todos los campos iguales</span>'; }
+      else{ dh='<span style="color:#a0aec0;font-size:0.73rem">Sin contraparte</span>'; }
+      html+=`<td class="field-changes">${dh}</td>`;
+    }
+    tr.innerHTML=html; tbody.appendChild(tr);
+  });
+}
+
+// ── Backlog export ──
+function bExportResults(){
+  if(!bCompResults.length) return;
+  const search=normalize(document.getElementById('b-searchBox').value);
+  const activeCols=bGetActiveCols();
+  const exportCols=activeCols.length>0?activeCols:bAllDiffCols;
+  const filtered=bCompResults.filter(r=>{
+    const eff=bEffectiveStatus(r);
+    if(bCurrentFilterType==='status'&&eff!==bCurrentFilterVal) return false;
+    if(bCurrentFilterType==='matchType'&&r.matchType!==bCurrentFilterVal) return false;
+    if(search&&!normalize(r.tramite+' '+r.mant+' '+r.nombre).includes(search)) return false;
+    return true;
+  });
+  const statusLabel={diff:'Con diferencias',match:'Sin cambios',only1:'Solo en portafolio',only2:'Solo en backlog'};
+  const matchTypeLabel={id_tramite:'ID Trámite',id_mant:'ID Mantenimiento',extra:'Otro ID',nombre:'Nombre','-':'—'};
+  const fixedH=['#','Estado','Tipo Match','ID Trámite','ID Mantenimiento','Nombre'];
+  const headerRow=[...fixedH];
+  exportCols.forEach(col=>{ headerRow.push(col+' (Portafolio)'); headerRow.push(col+' (Backlog)'); });
+  if(exportCols.length===0) headerRow.push('Diferencias');
+  const wsData=[headerRow];
+  filtered.forEach((r,i)=>{
+    const row=[i+1,statusLabel[r.status]||r.status,matchTypeLabel[r.matchType]||r.matchType,r.tramite,r.mant,r.nombre];
+    if(exportCols.length>0){ exportCols.forEach(col=>{ const de=r.diffs.find(d=>d.col===col); const vals=r.allVals[col]; row.push(de?de.v1:(vals?vals.v1:'')); row.push(de?de.v2:(vals?vals.v2:'')); }); }
+    else{ row.push(r.diffs.map(d=>d.col+':"'+d.v1+'"→"'+d.v2+'"').join(' | ')); }
+    wsData.push(row);
+  });
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(wsData);
+  const wCols=[4,20,15,18,20,40]; exportCols.forEach(()=>{wCols.push(22,22);}); if(exportCols.length===0) wCols.push(80);
+  ws['!cols']=wCols.map(w=>({wch:w}));
+  ws['!freeze']={xSplit:0,ySplit:1,topLeftCell:'A2',activeCell:'A2',sqref:'A2'};
+  const s=(fill,fo={})=>({fill:{patternType:'solid',fgColor:{rgb:fill}},font:{bold:fo.bold||false,color:{rgb:fo.color||'333333'}}});
+  fixedH.forEach((_,ci)=>{ const a=XLSX.utils.encode_cell({r:0,c:ci}); if(ws[a]) ws[a].s=s('1A202C',{bold:true,color:'FFFFFF'}); });
+  if(exportCols.length>0){
+    exportCols.forEach((col,ci)=>{
+      const pi=fixedH.length+ci*2, ai=pi+1;
+      const pa=XLSX.utils.encode_cell({r:0,c:pi}), aa=XLSX.utils.encode_cell({r:0,c:ai});
+      if(!ws[pa]) ws[pa]={v:col+' (Portafolio)',t:'s'}; if(!ws[aa]) ws[aa]={v:col+' (Backlog)',t:'s'};
+      ws[pa].s=s('1B5E20',{bold:true,color:'FFFFFF'}); ws[aa].s=s('7B1113',{bold:true,color:'FFFFFF'});
+      filtered.forEach((r,ri)=>{ const isDiff=!!r.diffs.find(d=>d.col===col);
+        const pa2=XLSX.utils.encode_cell({r:ri+1,c:pi}), aa2=XLSX.utils.encode_cell({r:ri+1,c:ai});
+        if(isDiff){ if(ws[pa2]) ws[pa2].s=s('C6F6D5'); if(ws[aa2]) ws[aa2].s=s('FED7D7'); }
+      });
+    });
+  }
+  const SS={diff:s('FFF3E0',{bold:true,color:'B7791F'}),match:s('F0FFF4',{bold:true,color:'276749'}),only1:s('EBF4FF',{bold:true,color:'2B6CB0'}),only2:s('FAF5FF',{bold:true,color:'553C9A'})};
+  filtered.forEach((r,ri)=>{ const a=XLSX.utils.encode_cell({r:ri+1,c:1}); const st=SS[r.status]; if(ws[a]&&st) ws[a].s=st; });
+  XLSX.utils.book_append_sheet(wb,ws,'Comparación Backlog');
+  XLSX.writeFile(wb,'Comparacion_Backlog_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 </script>
 </body>
