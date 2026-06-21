@@ -7,225 +7,206 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f5f7; color: #2d3748; }
 
   header {
-    background: linear-gradient(135deg, #1a237e, #283593);
-    color: white; padding: 18px 30px;
+    background: linear-gradient(135deg, #7b1113, #a81c1f);
+    color: white; padding: 14px 32px;
     display: flex; align-items: center; gap: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
   }
-  header h1 { font-size: 1.3rem; font-weight: 600; }
-  header span { font-size: 0.85rem; opacity: 0.75; }
+  header h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.3px; }
+  header span { font-size: 0.8rem; opacity: 0.8; margin-left: 4px; }
 
-  .upload-section { display: flex; gap: 20px; padding: 24px 30px; flex-wrap: wrap; }
+  .upload-section { display: flex; gap: 16px; padding: 20px 28px; flex-wrap: wrap; }
   .upload-card {
-    flex: 1; min-width: 280px; background: white; border-radius: 10px;
-    padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border: 2px dashed #c5cae9; transition: border-color 0.2s;
+    flex: 1; min-width: 280px; background: white; border-radius: 8px;
+    padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    border: 2px dashed #cbd5e0; transition: border-color 0.2s;
   }
-  .upload-card.loaded { border: 2px solid #43a047; }
-  .upload-card h3 { font-size: 0.9rem; color: #5c6bc0; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .upload-card.loaded { border: 2px solid #38a169; }
+  .upload-card h3 { font-size: 0.78rem; color: #718096; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; }
   .upload-card label {
-    display: block; cursor: pointer; background: #e8eaf6; color: #3949ab;
-    border-radius: 6px; padding: 10px 14px; font-size: 0.85rem; text-align: center;
-    transition: background 0.2s;
+    display: block; cursor: pointer; background: #ebf4ff; color: #2b6cb0;
+    border-radius: 6px; padding: 9px 14px; font-size: 0.83rem; text-align: center;
+    transition: background 0.2s; font-weight: 600;
   }
-  .upload-card label:hover { background: #c5cae9; }
+  .upload-card label:hover { background: #bee3f8; }
   .upload-card input[type=file] { display: none; }
-  .file-info { margin-top: 10px; font-size: 0.8rem; color: #666; min-height: 18px; }
-  .file-info.ok { color: #2e7d32; font-weight: 600; }
+  .file-info { margin-top: 8px; font-size: 0.78rem; color: #718096; min-height: 18px; }
+  .file-info.ok { color: #276749; font-weight: 600; }
 
   .config-section {
-    background: white; margin: 0 30px 20px; border-radius: 10px;
-    padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: white; margin: 0 28px 16px; border-radius: 8px;
+    padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   }
-  .config-section h3 { font-size: 0.85rem; color: #5c6bc0; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .config-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
-  .config-group { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
-  .config-group label { font-size: 0.78rem; color: #888; }
+  .config-section h3 { font-size: 0.78rem; color: #718096; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; }
+  .config-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+  .config-group { display: flex; flex-direction: column; gap: 3px; min-width: 160px; }
+  .config-group label { font-size: 0.75rem; color: #a0aec0; font-weight: 600; }
   .config-group select, .config-group input {
-    border: 1px solid #ddd; border-radius: 5px; padding: 6px 10px;
-    font-size: 0.85rem; color: #333; background: #fafafa;
+    border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px 10px;
+    font-size: 0.83rem; color: #2d3748; background: #f7fafc;
   }
 
   /* ── ID columns side-by-side panel ── */
   .id-cols-panel {
-    background: white; margin: 0 30px 20px; border-radius: 10px;
-    padding: 20px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    display: none;
+    background: white; margin: 0 28px 16px; border-radius: 8px;
+    padding: 18px 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); display: none;
   }
-  .id-cols-panel h3 { font-size: 0.85rem; color: #5c6bc0; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .id-cols-desc { font-size: 0.78rem; color: #999; margin-bottom: 16px; }
-  .id-cols-grid {
-    display: grid;
-    grid-template-columns: 1fr 4px 1fr;
-    gap: 0 0;
-  }
-  .id-cols-side { display: flex; flex-direction: column; gap: 12px; }
-  .id-cols-side h4 { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.4px; margin-bottom: 4px; padding: 5px 10px; border-radius: 5px; }
-  .id-cols-side.port h4 { background: #e8eaf6; color: #3949ab; }
-  .id-cols-side.area h4 { background: #fce4ec; color: #c62828; }
-  .id-cols-divider { background: #eee; margin: 0 16px; border-radius: 2px; }
+  .id-cols-panel h3 { font-size: 0.78rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; }
+  .id-cols-desc { font-size: 0.76rem; color: #a0aec0; margin-bottom: 14px; }
+  .id-cols-grid { display: grid; grid-template-columns: 1fr 4px 1fr; gap: 0; }
+  .id-cols-side { display: flex; flex-direction: column; gap: 10px; }
+  .id-cols-side h4 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.4px; margin-bottom: 2px; padding: 5px 10px; border-radius: 5px; }
+  .id-cols-side.port h4 { background: #ebf8ff; color: #2b6cb0; }
+  .id-cols-side.area h4 { background: #fff5f5; color: #c53030; }
+  .id-cols-divider { background: #e2e8f0; margin: 0 16px; border-radius: 2px; }
   .id-col-row { display: flex; flex-direction: column; gap: 3px; }
-  .id-col-row label { font-size: 0.76rem; color: #888; }
+  .id-col-row label { font-size: 0.73rem; color: #a0aec0; font-weight: 600; }
   .id-col-row select {
-    border: 1px solid #ddd; border-radius: 5px; padding: 5px 8px;
-    font-size: 0.82rem; color: #333; background: #fafafa; width: 100%;
+    border: 1px solid #e2e8f0; border-radius: 5px; padding: 5px 8px;
+    font-size: 0.8rem; color: #2d3748; background: #f7fafc; width: 100%;
   }
-  .id-col-row select.auto-matched { border-color: #43a047; background: #f1f8e9; }
-  .id-col-row .match-tag {
-    font-size: 0.7rem; color: #2e7d32; display: none;
-  }
+  .id-col-row select.auto-matched { border-color: #38a169; background: #f0fff4; }
+  .id-col-row .match-tag { font-size: 0.68rem; color: #276749; display: none; }
   .id-col-row select.auto-matched + .match-tag { display: inline; }
 
   /* ── Column mapping panel ── */
   .col-map-panel {
-    background: white; margin: 0 30px 20px; border-radius: 10px;
-    padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    display: none;
+    background: white; margin: 0 28px 16px; border-radius: 8px;
+    padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); display: none;
   }
-  .col-map-panel h3 { font-size: 0.85rem; color: #5c6bc0; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .col-map-desc { font-size: 0.78rem; color: #999; margin-bottom: 14px; }
-  .col-map-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
-  .col-map-row {
-    display: grid; grid-template-columns: 1fr 32px 1fr 36px;
-    gap: 8px; align-items: center;
-  }
-  .col-map-row select {
-    border: 1px solid #ddd; border-radius: 5px; padding: 5px 8px;
-    font-size: 0.82rem; color: #333; background: #fafafa; width: 100%;
-  }
-  .col-map-arrow {
-    text-align: center; color: #9fa8da; font-size: 1rem; font-weight: 700;
-  }
-  .col-map-del {
-    background: none; border: 1px solid #ffcdd2; border-radius: 5px;
-    color: #c62828; cursor: pointer; padding: 4px 8px; font-size: 0.8rem;
-    transition: background 0.15s;
-  }
-  .col-map-del:hover { background: #ffebee; }
-  .col-map-add {
-    border: 1.5px dashed #9fa8da; background: none; border-radius: 6px;
-    color: #3949ab; padding: 6px 14px; font-size: 0.8rem; cursor: pointer;
-    transition: background 0.15s;
-  }
-  .col-map-add:hover { background: #e8eaf6; }
+  .col-map-panel h3 { font-size: 0.78rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; }
+  .col-map-desc { font-size: 0.76rem; color: #a0aec0; margin-bottom: 12px; }
+  .col-map-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .col-map-row { display: grid; grid-template-columns: 1fr 32px 1fr 36px; gap: 8px; align-items: center; }
+  .col-map-row select { border: 1px solid #e2e8f0; border-radius: 5px; padding: 5px 8px; font-size: 0.8rem; color: #2d3748; background: #f7fafc; width: 100%; }
+  .col-map-arrow { text-align: center; color: #a0aec0; font-size: 1rem; font-weight: 700; }
+  .col-map-del { background: none; border: 1px solid #fed7d7; border-radius: 5px; color: #c53030; cursor: pointer; padding: 4px 8px; font-size: 0.78rem; }
+  .col-map-del:hover { background: #fff5f5; }
+  .col-map-add { border: 1.5px dashed #bee3f8; background: none; border-radius: 6px; color: #2b6cb0; padding: 6px 14px; font-size: 0.78rem; cursor: pointer; }
+  .col-map-add:hover { background: #ebf8ff; }
 
   /* ── Field filter panel ── */
   .field-filter-panel {
-    background: white; margin: 0 30px 20px; border-radius: 10px;
-    padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    display: none;
+    background: white; margin: 0 28px 16px; border-radius: 8px;
+    padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); display: none;
   }
-  .field-filter-panel h3 { font-size: 0.85rem; color: #5c6bc0; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .field-filter-desc { font-size: 0.78rem; color: #888; margin-bottom: 12px; }
-  .field-chips-wrap {
-    display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px;
-  }
+  .field-filter-panel h3 { font-size: 0.78rem; color: #718096; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; }
+  .field-filter-desc { font-size: 0.76rem; color: #a0aec0; margin-bottom: 10px; }
+  .field-chips-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
   .field-chip {
-    display: inline-flex; align-items: center; gap: 5px;
-    border: 1.5px solid #c5cae9; border-radius: 16px;
-    padding: 4px 12px; font-size: 0.76rem; cursor: pointer;
-    background: white; color: #3949ab; transition: all 0.15s; user-select: none;
+    display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid #e2e8f0;
+    border-radius: 20px; padding: 3px 11px; font-size: 0.73rem; cursor: pointer;
+    background: white; color: #4a5568; transition: all 0.15s; user-select: none; font-weight: 500;
   }
-  .field-chip.active { background: #3949ab; color: white; border-color: #3949ab; }
-  .field-chip:hover { border-color: #3949ab; }
-  .field-filter-actions { display: flex; gap: 8px; }
+  .field-chip.active { background: #2b6cb0; color: white; border-color: #2b6cb0; }
+  .field-chip:hover { border-color: #2b6cb0; color: #2b6cb0; }
+  .field-filter-actions { display: flex; gap: 6px; }
   .chip-action-btn {
-    border: 1px solid #ddd; background: #f5f5f5; border-radius: 5px;
-    padding: 4px 12px; font-size: 0.76rem; cursor: pointer; color: #555;
+    border: 1px solid #e2e8f0; background: #f7fafc; border-radius: 5px;
+    padding: 4px 12px; font-size: 0.73rem; cursor: pointer; color: #718096; font-weight: 500;
   }
-  .chip-action-btn:hover { background: #e8eaf6; color: #3949ab; border-color: #9fa8da; }
+  .chip-action-btn:hover { background: #ebf8ff; color: #2b6cb0; border-color: #bee3f8; }
 
   .compare-btn {
-    background: linear-gradient(135deg, #1a237e, #3949ab);
-    color: white; border: none; border-radius: 7px;
-    padding: 10px 28px; font-size: 0.9rem; cursor: pointer;
-    font-weight: 600; transition: opacity 0.2s;
+    background: linear-gradient(135deg, #7b1113, #a81c1f);
+    color: white; border: none; border-radius: 6px;
+    padding: 9px 26px; font-size: 0.88rem; cursor: pointer;
+    font-weight: 700; transition: opacity 0.2s; letter-spacing: 0.3px;
   }
   .compare-btn:hover { opacity: 0.88; }
-  .compare-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .compare-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-  .summary-bar { display: flex; gap: 14px; padding: 0 30px 20px; flex-wrap: wrap; }
+  .summary-bar { display: flex; gap: 12px; padding: 0 28px 16px; flex-wrap: wrap; }
   .stat-chip {
-    display: flex; align-items: center; gap: 8px; background: white;
-    border-radius: 8px; padding: 10px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07);
-    font-size: 0.82rem;
+    display: flex; align-items: center; gap: 12px; background: white;
+    border-radius: 8px; padding: 12px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    font-size: 0.8rem; border-left: 4px solid #e2e8f0; cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.1s;
   }
-  .stat-chip .dot { width: 10px; height: 10px; border-radius: 50%; }
-  .stat-chip .num { font-size: 1.3rem; font-weight: 700; }
-  .dot-match { background: #43a047; } .dot-diff { background: #f57c00; }
-  .dot-only1 { background: #1565c0; } .dot-only2 { background: #6a1b9a; }
-  .dot-name  { background: #00838f; }
+  .stat-chip:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.12); transform: translateY(-1px); }
+  .stat-chip .dot { display: none; }
+  .stat-chip .num { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+  .stat-chip .lbl { font-size: 0.72rem; color: #718096; margin-top: 2px; font-weight: 500; }
+  .stat-diff  { border-left-color: #ed8936; } .stat-diff  .num { color: #c05621; }
+  .stat-match { border-left-color: #48bb78; } .stat-match .num { color: #276749; }
+  .stat-name  { border-left-color: #4299e1; } .stat-name  .num { color: #2b6cb0; }
+  .stat-only1 { border-left-color: #667eea; } .stat-only1 .num { color: #434190; }
+  .stat-only2 { border-left-color: #9f7aea; } .stat-only2 .num { color: #553c9a; }
 
-  .filters {
-    display: flex; gap: 10px; padding: 0 30px 14px; flex-wrap: wrap; align-items: center;
-  }
+  .filters { display: flex; gap: 8px; padding: 0 28px 14px; flex-wrap: wrap; align-items: center; }
   .filter-btn {
-    border: 2px solid #ddd; background: white; border-radius: 20px;
-    padding: 5px 14px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; font-weight: 500;
+    border: 1.5px solid #e2e8f0; background: white; border-radius: 20px;
+    padding: 5px 14px; font-size: 0.76rem; cursor: pointer; transition: all 0.15s;
+    font-weight: 600; color: #4a5568;
   }
-  .filter-btn.active { border-color: #3949ab; background: #3949ab; color: white; }
+  .filter-btn.active { background: #2d3748; border-color: #2d3748; color: white; }
   .search-box {
-    border: 1px solid #ddd; border-radius: 20px; padding: 5px 14px;
-    font-size: 0.82rem; min-width: 220px; margin-left: auto;
+    border: 1px solid #e2e8f0; border-radius: 20px; padding: 5px 14px;
+    font-size: 0.8rem; min-width: 220px; margin-left: auto; background: white; color: #2d3748;
   }
+  .search-box:focus { outline: none; border-color: #4299e1; }
 
-  .results-container { padding: 0 30px 40px; }
+  .results-container { padding: 0 28px 40px; }
   #tableWrap {
-    overflow: auto;
-    max-height: 72vh;          /* scroll vertical */
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: auto; max-height: 72vh;
+    border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.1);
   }
-  table {
-    width: 100%; border-collapse: collapse; background: white;
-    font-size: 0.8rem;
-  }
-  thead tr { background: #1a237e; color: white; }
+  table { width: 100%; border-collapse: collapse; background: white; font-size: 0.78rem; }
+  thead tr { background: #1a202c; color: white; }
   thead th {
-    padding: 10px 10px; text-align: left; white-space: nowrap; font-weight: 600;
-    position: sticky; top: 0; z-index: 2;
-    background-color: #1a237e;          /* explicit bg needed for sticky */
-    color: white;
-    border-bottom: 2px solid rgba(255,255,255,0.2);
+    padding: 10px 12px; text-align: left; white-space: nowrap; font-weight: 700;
+    position: sticky; top: 0; z-index: 2; background-color: #1a202c; color: white;
+    border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 0.71rem;
+    letter-spacing: 0.4px; text-transform: uppercase;
   }
-  /* paired column headers */
   thead th.th-port { background: #1b5e20; background-color: #1b5e20; }
-  thead th.th-area { background: #b71c1c; background-color: #b71c1c; }
-  tbody tr:nth-child(even) { background: #fafafa; }
-  tbody tr:hover { background: #e8eaf6; }
-  td { padding: 8px 10px; vertical-align: top; border-bottom: 1px solid #eee; max-width: 200px; }
-  td.td-port { background: #f1f8e9; }
-  td.td-area { background: #ffebee; }
-  td.td-same { background: #fff; }
+  thead th.th-area { background: #7b1113; background-color: #7b1113; }
+  tbody tr { border-bottom: 1px solid #edf2f7; }
+  tbody tr:nth-child(even) { background: #f7fafc; }
+  tbody tr:hover { background: #ebf8ff; }
+  td { padding: 9px 12px; vertical-align: middle; max-width: 220px; }
+  td.td-port { background: #f0fff4; }
+  td.td-area { background: #fff5f5; }
+  td.td-same { background: transparent; }
 
-  .badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
-  .badge-match { background: #e8f5e9; color: #2e7d32; }
-  .badge-diff  { background: #fff3e0; color: #e65100; }
-  .badge-only1 { background: #e3f2fd; color: #0d47a1; }
-  .badge-only2 { background: #f3e5f5; color: #4a148c; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; padding: 3px 10px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+  .badge-diff  { background: #fffbeb; color: #b7791f; border: 1px solid #fbd38d; }
+  .badge-match { background: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
+  .badge-only1 { background: #ebf4ff; color: #2b6cb0; border: 1px solid #90cdf4; }
+  .badge-only2 { background: #faf5ff; color: #553c9a; border: 1px solid #d6bcfa; }
 
-  .field-changes { margin-top: 4px; }
-  .change-item { display: flex; gap: 6px; align-items: baseline; margin-bottom: 3px; font-size: 0.75rem; flex-wrap: wrap; }
-  .change-field { font-weight: 600; color: #5c6bc0; min-width: 80px; }
-  .val-old { background: #ffebee; color: #c62828; border-radius: 3px; padding: 1px 5px; }
-  .val-new { background: #e8f5e9; color: #1b5e20; border-radius: 3px; padding: 1px 5px; }
-  .arrow { color: #999; }
+  .match-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    border-radius: 4px; padding: 2px 7px; font-size: 0.68rem; font-weight: 700; white-space: nowrap;
+  }
+  .match-tramite { background: #ebf4ff; color: #2b6cb0; }
+  .match-mant    { background: #faf5ff; color: #553c9a; }
+  .match-extra   { background: #fffbeb; color: #b7791f; }
+  .match-nombre  { background: #e6fffa; color: #234e52; }
+  .match-none    { color: #a0aec0; font-size: 0.75rem; }
+
+  .field-changes { }
+  .change-item { display: flex; gap: 5px; align-items: baseline; margin-bottom: 3px; font-size: 0.73rem; flex-wrap: wrap; }
+  .change-field { font-weight: 700; color: #4a5568; min-width: 80px; }
+  .val-old { background: #fff5f5; color: #c53030; border-radius: 3px; padding: 1px 5px; font-size: 0.71rem; }
+  .val-new { background: #f0fff4; color: #276749; border-radius: 3px; padding: 1px 5px; font-size: 0.71rem; }
+  .arrow { color: #cbd5e0; }
 
   .expand-btn {
-    background: none; border: 1px solid #9fa8da; border-radius: 4px;
-    color: #3949ab; padding: 2px 7px; cursor: pointer; font-size: 0.72rem; margin-top: 4px;
+    background: none; border: 1px solid #bee3f8; border-radius: 4px;
+    color: #2b6cb0; padding: 2px 7px; cursor: pointer; font-size: 0.7rem; margin-top: 4px;
   }
   .hidden { display: none; }
 
   .empty-state {
-    text-align: center; padding: 60px 20px; color: #aaa;
-    background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    text-align: center; padding: 60px 20px; color: #a0aec0;
+    background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   }
-  .empty-state p { font-size: 1rem; margin-top: 16px; }
-  #loading { text-align: center; padding: 40px; color: #3949ab; font-size: 0.9rem; display: none; }
+  .empty-state p { font-size: 0.95rem; margin-top: 14px; }
+  #loading { text-align: center; padding: 40px; color: #2b6cb0; font-size: 0.88rem; display: none; }
 </style>
 </head>
 <body>
@@ -247,6 +228,10 @@
     <label for="file1">📂 Seleccionar archivo Excel (.xlsx / .xlsm / .xls)</label>
     <input type="file" id="file1" accept=".xlsx,.xlsm,.xls">
     <div class="file-info" id="info1">Sin archivo cargado</div>
+    <div id="warn1" style="display:none;margin-top:8px;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;font-size:0.76rem;color:#6d4c00;">
+      ⚠️ <strong>Campos con fórmulas dinámicas detectados</strong> (como % PLANIFICADO, GAP, RATIO).<br>
+      Para que los valores sean los actuales, <strong>abre el archivo en Excel, guárdalo con Ctrl+S y vuelve a cargarlo aquí</strong>.
+    </div>
     <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
       <div class="config-group" style="min-width:140px;"><label>Hoja</label>
         <select id="sheet1" onchange="onSheetChange(1)"><option>-- carga archivo --</option></select></div>
@@ -259,6 +244,10 @@
     <label for="file2">📂 Seleccionar archivo Excel (.xlsx / .xlsm / .xls)</label>
     <input type="file" id="file2" accept=".xlsx,.xlsm,.xls">
     <div class="file-info" id="info2">Sin archivo cargado</div>
+    <div id="warn2" style="display:none;margin-top:8px;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;font-size:0.76rem;color:#6d4c00;">
+      ⚠️ <strong>Campos con fórmulas dinámicas detectados</strong>.<br>
+      Para que los valores sean los actuales, <strong>abre el archivo en Excel, guárdalo con Ctrl+S y vuelve a cargarlo aquí</strong>.
+    </div>
     <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
       <div class="config-group" style="min-width:140px;"><label>Hoja</label>
         <select id="sheet2" onchange="onSheetChange(2)"><option>-- carga archivo --</option></select></div>
@@ -360,21 +349,31 @@
 
 <!-- ── SUMMARY ── -->
 <div class="summary-bar" id="summaryBar" style="display:none">
-  <div class="stat-chip"><div class="dot dot-diff"></div><div><div class="num" id="cnt-diff">0</div>Con diferencias</div></div>
-  <div class="stat-chip"><div class="dot dot-match"></div><div><div class="num" id="cnt-match">0</div>Sin cambios</div></div>
-  <div class="stat-chip"><div class="dot dot-name"></div><div><div class="num" id="cnt-name">0</div>Match por nombre</div></div>
-  <div class="stat-chip"><div class="dot dot-only1"></div><div><div class="num" id="cnt-only1">0</div>Solo en portafolio</div></div>
-  <div class="stat-chip"><div class="dot dot-only2"></div><div><div class="num" id="cnt-only2">0</div>Solo en área</div></div>
+  <div class="stat-chip stat-diff" onclick="setFilterFromStat('diff',this)">
+    <div><div class="num" id="cnt-diff">0</div><div class="lbl">Con diferencias</div></div>
+  </div>
+  <div class="stat-chip stat-match" onclick="setFilterFromStat('match',this)">
+    <div><div class="num" id="cnt-match">0</div><div class="lbl">Sin cambios</div></div>
+  </div>
+  <div class="stat-chip stat-name" onclick="setFilterFromStat('name',this)">
+    <div><div class="num" id="cnt-name">0</div><div class="lbl">Match por nombre</div></div>
+  </div>
+  <div class="stat-chip stat-only1" onclick="setFilterFromStat('only1',this)">
+    <div><div class="num" id="cnt-only1">0</div><div class="lbl">Solo en portafolio</div></div>
+  </div>
+  <div class="stat-chip stat-only2" onclick="setFilterFromStat('only2',this)">
+    <div><div class="num" id="cnt-only2">0</div><div class="lbl">Solo en área</div></div>
+  </div>
 </div>
 
 <!-- ── STATUS FILTERS ── -->
 <div class="filters" id="filterBar" style="display:none">
-  <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
-  <button class="filter-btn" style="border-color:#f57c00;color:#f57c00" onclick="setFilter('diff',this)">🔶 Con diferencias</button>
-  <button class="filter-btn" style="border-color:#43a047;color:#43a047" onclick="setFilter('match',this)">✅ Sin cambios</button>
-  <button class="filter-btn" style="border-color:#00838f;color:#00838f" onclick="setFilter('name',this)">🔤 Match por nombre</button>
-  <button class="filter-btn" style="border-color:#1565c0;color:#1565c0" onclick="setFilter('only1',this)">📋 Solo en portafolio</button>
-  <button class="filter-btn" style="border-color:#6a1b9a;color:#6a1b9a" onclick="setFilter('only2',this)">📄 Solo en área</button>
+  <button class="filter-btn active" onclick="setFilter('all','all',this)">Todos</button>
+  <button class="filter-btn" style="border-color:#ed8936;color:#c05621" onclick="setFilter('status','diff',this)">🔶 Con diferencias</button>
+  <button class="filter-btn" style="border-color:#48bb78;color:#276749" onclick="setFilter('status','match',this)">✅ Sin cambios</button>
+  <button class="filter-btn" style="border-color:#4299e1;color:#2b6cb0" onclick="setFilter('matchType','nombre',this)">🔤 Match por nombre</button>
+  <button class="filter-btn" style="border-color:#667eea;color:#434190" onclick="setFilter('status','only1',this)">📋 Solo en portafolio</button>
+  <button class="filter-btn" style="border-color:#9f7aea;color:#553c9a" onclick="setFilter('status','only2',this)">📄 Solo en área</button>
   <input class="search-box" type="text" id="searchBox" placeholder="🔍 Buscar por ID, nombre..." oninput="applyFilters()">
 </div>
 
@@ -422,7 +421,9 @@ let headers1=[], headers2=[];
 let compResults=[];         // full result set
 let allDiffCols=[];         // every col name that has at least one diff
 let selectedFieldFilter=new Set(); // which cols to show (empty = all)
-let currentFilter='all';
+let currentFilter = 'all';
+let currentFilterType = 'all'; // 'all' | 'status' | 'matchType'
+let currentFilterVal  = 'all';
 let colMappings=[];         // [{col1: 'Portafolio col name', col2: 'Area col name'}]
 
 // ═══════════════════════════════════════════════════════════
@@ -663,6 +664,27 @@ function loadSheetData(num) {
   populateColSelectors(num, hdrs);
   maybeShowIdPanel();
   checkReady();
+
+  // Warn if any percentage column contains volatile formulas (TODAY, etc.)
+  // Detect by checking if pct cells have cell.f set (formula)
+  const warnEl = document.getElementById('warn'+num);
+  let hasVolatile = false;
+  const pctIndices = hdrs.map((h,i)=>isPctHeader(h)?i:-1).filter(i=>i>=0);
+  if(pctIndices.length > 0 && ws){
+    const ref2 = ws['!ref'] ? XLSX.utils.decode_range(ws['!ref']) : null;
+    if(ref2){
+      outer: for(let ri=ref2.s.r+1; ri<Math.min(ref2.s.r+10, ref2.e.r+1); ri++){
+        for(const ci of pctIndices){
+          const cell = ws[XLSX.utils.encode_cell({r:ri, c:ci})];
+          if(cell && cell.f){
+            hasVolatile = true;
+            break outer;
+          }
+        }
+      }
+    }
+  }
+  if(warnEl) warnEl.style.display = hasVolatile ? 'block' : 'none';
 }
 
 // Auto-detect which row is the header (first row with ≥3 non-empty text cells)
@@ -1077,10 +1099,30 @@ function renderResults() {
   applyFilters();
 }
 
-function setFilter(f,btn) {
-  currentFilter=f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+function setFilter(type, val, btn) {
+  currentFilterType = type;
+  currentFilterVal  = val;
+  currentFilter = val; // keep for export compat
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  applyFilters();
+}
+
+function setFilterFromStat(val, chip) {
+  // Clicking a stat chip = filter by that value
+  // Map val to the right dimension
+  const isMatchType = val === 'name';
+  const type = isMatchType ? 'matchType' : 'status';
+  const realVal = isMatchType ? 'nombre' : val;
+  // Toggle off if already active
+  if(currentFilterType === type && currentFilterVal === realVal) {
+    currentFilterType = 'all'; currentFilterVal = 'all'; currentFilter = 'all';
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.filter-btn').classList.add('active'); // "Todos"
+  } else {
+    currentFilterType = type; currentFilterVal = realVal; currentFilter = realVal;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  }
   applyFilters();
 }
 
@@ -1113,7 +1155,8 @@ function applyFilters() {
   // ── Filter rows ──
   const filtered=compResults.filter(r=>{
     const eff=effectiveStatus(r);
-    if(currentFilter!=='all'&&eff!==currentFilter) return false;
+    if(currentFilterType==='status'  && eff !== currentFilterVal) return false;
+    if(currentFilterType==='matchType' && r.matchType !== currentFilterVal) return false;
     if(search&&!normalize(r.tramite+' '+r.mant+' '+r.nombre).includes(search)) return false;
     return true;
   });
@@ -1158,11 +1201,11 @@ function applyFilters() {
     only2:['badge-only2','📄 Solo área']
   };
   const matchLabels={
-    id_tramite:'<span style="color:#1565c0;font-weight:600">ID Trámite</span>',
-    id_mant:   '<span style="color:#6a1b9a;font-weight:600">ID Mantenimiento</span>',
-    extra:     '<span style="color:#e65100;font-weight:600">Otro ID</span>',
-    nombre:    '<span style="color:#00838f;font-weight:600">🔤 Nombre</span>',
-    '-':       '<span style="color:#bbb">—</span>'
+    id_tramite:'<span class="match-chip match-tramite">ID Trámite</span>',
+    id_mant:   '<span class="match-chip match-mant">ID Mantenimiento</span>',
+    extra:     '<span class="match-chip match-extra">Otro ID</span>',
+    nombre:    '<span class="match-chip match-nombre">🔤 Nombre</span>',
+    '-':       '<span class="match-none">—</span>'
   };
 
   filtered.forEach((r,i)=>{
@@ -1252,9 +1295,11 @@ function exportResults() {
   const activeCols=getActiveCols();
 
   const filtered=compResults.filter(r=>{
-    if(currentFilter!=='all'&&r.status!==currentFilter) return false;
+    const eff=effectiveStatus(r);
+    if(currentFilterType==='status'   && eff !== currentFilterVal) return false;
+    if(currentFilterType==='matchType' && r.matchType !== currentFilterVal) return false;
     if(search&&!normalize(r.tramite+' '+r.mant+' '+r.nombre).includes(search)) return false;
-    if(selectedFieldFilter.size>0&&r.status==='diff'){
+    if(selectedFieldFilter.size>0&&eff==='diff'){
       if(!r.diffs.some(d=>selectedFieldFilter.has(d.col))) return false;
     }
     return true;
