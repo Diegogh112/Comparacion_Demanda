@@ -157,67 +157,11 @@
   table { width: 100%; border-collapse: collapse; background: white; font-size: 0.78rem; }
   thead tr { background: #1a202c; color: white; }
   thead th {
-    padding: 10px 12px 10px 10px; text-align: left; white-space: nowrap; font-weight: 700;
+    padding: 10px 12px; text-align: left; white-space: nowrap; font-weight: 700;
     position: sticky; top: 0; z-index: 2; background-color: #1a202c; color: white;
     border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 0.71rem;
     letter-spacing: 0.4px; text-transform: uppercase;
-    cursor: default; user-select: none;
   }
-  .th-inner {
-    display: inline-flex; align-items: center; gap: 5px; width: 100%;
-  }
-  .th-label { flex: 1; }
-  .th-filter-btn {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 16px; height: 16px; border-radius: 3px; cursor: pointer; flex-shrink: 0;
-    font-size: 0.65rem; opacity: 0.6; transition: opacity 0.15s, background 0.15s;
-  }
-  .th-filter-btn:hover { opacity: 1; background: rgba(255,255,255,0.2); }
-  .th-filter-btn.has-filter { opacity: 1; background: rgba(255,200,0,0.4); color: #ffe066; }
-
-  /* ── Column filter dropdown ── */
-  .col-filter-dropdown {
-    position: fixed; z-index: 9999;
-    background: white; border-radius: 8px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-    min-width: 200px; max-width: 280px;
-    padding: 10px 0; color: #2d3748; font-size: 0.8rem;
-    border: 1px solid #e2e8f0;
-  }
-  .col-filter-search {
-    margin: 0 10px 8px; padding: 5px 10px;
-    border: 1px solid #e2e8f0; border-radius: 5px; width: calc(100% - 20px);
-    font-size: 0.78rem; box-sizing: border-box;
-  }
-  .col-filter-search:focus { outline: none; border-color: #4299e1; }
-  .col-filter-list {
-    max-height: 220px; overflow-y: auto;
-    padding: 0 4px;
-  }
-  .col-filter-item {
-    display: flex; align-items: center; gap: 7px;
-    padding: 5px 10px; cursor: pointer; border-radius: 4px;
-    font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .col-filter-item:hover { background: #ebf8ff; }
-  .col-filter-item input[type=checkbox] { cursor: pointer; accent-color: #2b6cb0; flex-shrink:0; }
-  .col-filter-actions {
-    display: flex; gap: 6px; padding: 8px 10px 2px;
-    border-top: 1px solid #edf2f7; margin-top: 6px;
-  }
-  .col-filter-apply {
-    flex: 1; background: #2b6cb0; color: white; border: none;
-    border-radius: 5px; padding: 5px; font-size: 0.75rem; font-weight: 600; cursor: pointer;
-  }
-  .col-filter-clear {
-    flex: 1; background: #f7fafc; color: #718096; border: 1px solid #e2e8f0;
-    border-radius: 5px; padding: 5px; font-size: 0.75rem; cursor: pointer;
-  }
-  .col-filter-select-all {
-    padding: 4px 10px 6px; font-size: 0.73rem; color: #4299e1; cursor: pointer;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .col-filter-select-all:hover { text-decoration: underline; }
   thead th.th-port { background: #1b5e20; background-color: #1b5e20; }
   thead th.th-area { background: #7b1113; background-color: #7b1113; }
   tbody tr { border-bottom: 1px solid #edf2f7; }
@@ -1066,178 +1010,6 @@ function escHtml(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').re
 function getIdx(id){ const v=document.getElementById(id).value; return v===''?-1:parseInt(v); }
 
 // ═══════════════════════════════════════════════════════════
-//  COLUMN FILTER ENGINE  (shared by both tabs)
-// ═══════════════════════════════════════════════════════════
-// colFilters: Map<tabId, Map<colIndex, Set<value>>>
-const colFilters = { demanda: new Map(), backlog: new Map() };
-let activeFilterDropdown = null;  // {el, tabId, colIdx, closeOnClickAway}
-
-function closeFilterDropdown() {
-  if(activeFilterDropdown) {
-    activeFilterDropdown.el.remove();
-    activeFilterDropdown = null;
-  }
-}
-document.addEventListener('click', e => {
-  if(activeFilterDropdown && !activeFilterDropdown.el.contains(e.target) && !e.target.classList.contains('th-filter-btn'))
-    closeFilterDropdown();
-});
-
-// Build a th with filter button. colIdx=null means no filter.
-function buildTh(text, colIdx, tabId, extraClass) {
-  const th = document.createElement('th');
-  if(extraClass) th.className = extraClass;
-  const inner = document.createElement('div'); inner.className = 'th-inner';
-  const label = document.createElement('span'); label.className = 'th-label'; label.textContent = text;
-  inner.appendChild(label);
-  if(colIdx !== null) {
-    const btn = document.createElement('span'); btn.className = 'th-filter-btn'; btn.textContent = '▾';
-    btn.title = 'Filtrar'; btn.dataset.col = colIdx; btn.dataset.tab = tabId;
-    const filters = colFilters[tabId];
-    if(filters.has(colIdx) && filters.get(colIdx).size > 0) btn.classList.add('has-filter');
-    btn.addEventListener('click', e => { e.stopPropagation(); openFilterDropdown(btn, colIdx, tabId); });
-    inner.appendChild(btn);
-  }
-  th.appendChild(inner);
-  return th;
-}
-
-function openFilterDropdown(btn, colIdx, tabId) {
-  closeFilterDropdown();
-  const isBacklog = tabId === 'backlog';
-  const results   = isBacklog ? bCompResults : compResults;
-  const filters   = colFilters[tabId];
-  const activeFilter = filters.get(colIdx) || new Set();
-
-  // Collect unique values for this column from visible rows
-  const allVals = new Set();
-  results.forEach(r => {
-    const cell = getCellValue(r, colIdx, tabId);
-    allVals.add(cell === '' || cell === null || cell === undefined ? '(vacío)' : String(cell));
-  });
-  const sorted = [...allVals].sort((a,b) => a.localeCompare(b, 'es', {sensitivity:'base'}));
-
-  const dropdown = document.createElement('div');
-  dropdown.className = 'col-filter-dropdown';
-
-  // Search box
-  const search = document.createElement('input');
-  search.className = 'col-filter-search'; search.placeholder = '🔍 Buscar...'; search.type = 'text';
-
-  // Select all
-  const selectAllRow = document.createElement('div'); selectAllRow.className = 'col-filter-select-all';
-  selectAllRow.innerHTML = '<input type="checkbox" id="cfd-all"> <label for="cfd-all">Seleccionar todo</label>';
-
-  const list = document.createElement('div'); list.className = 'col-filter-list';
-
-  function buildList(filter) {
-    list.innerHTML = '';
-    sorted.forEach(val => {
-      if(filter && !val.toLowerCase().includes(filter.toLowerCase())) return;
-      const item = document.createElement('label'); item.className = 'col-filter-item';
-      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = val;
-      cb.checked = activeFilter.size === 0 || activeFilter.has(val);
-      const span = document.createElement('span'); span.textContent = val; span.title = val;
-      item.appendChild(cb); item.appendChild(span); list.appendChild(item);
-    });
-    const allCb = selectAllRow.querySelector('input');
-    const allChecked = [...list.querySelectorAll('input')].every(c => c.checked);
-    allCb.checked = allChecked; allCb.indeterminate = !allChecked && [...list.querySelectorAll('input')].some(c => c.checked);
-  }
-  buildList('');
-  search.addEventListener('input', () => buildList(search.value));
-  selectAllRow.querySelector('input').addEventListener('change', function() {
-    list.querySelectorAll('input').forEach(c => c.checked = this.checked);
-  });
-  list.addEventListener('change', () => {
-    const allCb = selectAllRow.querySelector('input');
-    const cbs = [...list.querySelectorAll('input')];
-    allCb.checked = cbs.every(c => c.checked);
-    allCb.indeterminate = !allCb.checked && cbs.some(c => c.checked);
-  });
-
-  // Action buttons
-  const actions = document.createElement('div'); actions.className = 'col-filter-actions';
-  const applyBtn = document.createElement('button'); applyBtn.className = 'col-filter-apply'; applyBtn.textContent = 'Aplicar';
-  const clearBtn = document.createElement('button'); clearBtn.className = 'col-filter-clear'; clearBtn.textContent = 'Limpiar';
-
-  applyBtn.addEventListener('click', () => {
-    const checked = [...list.querySelectorAll('input:checked')].map(c => c.value);
-    const allShown = list.querySelectorAll('input').length;
-    // If all are checked = no filter
-    if(checked.length === allShown) filters.delete(colIdx);
-    else filters.set(colIdx, new Set(checked));
-    // Update btn style
-    btn.classList.toggle('has-filter', filters.has(colIdx) && filters.get(colIdx).size > 0);
-    closeFilterDropdown();
-    if(isBacklog) bApplyFilters(); else applyFilters();
-  });
-  clearBtn.addEventListener('click', () => {
-    filters.delete(colIdx);
-    btn.classList.remove('has-filter');
-    closeFilterDropdown();
-    if(isBacklog) bApplyFilters(); else applyFilters();
-  });
-
-  actions.appendChild(applyBtn); actions.appendChild(clearBtn);
-  dropdown.appendChild(search); dropdown.appendChild(selectAllRow);
-  dropdown.appendChild(list); dropdown.appendChild(actions);
-  document.body.appendChild(dropdown);
-
-  // Position near the button
-  const rect = btn.getBoundingClientRect();
-  let top = rect.bottom + 4, left = rect.left;
-  if(left + 240 > window.innerWidth) left = window.innerWidth - 250;
-  if(top + 300 > window.innerHeight) top = rect.top - 310;
-  dropdown.style.top = top + 'px'; dropdown.style.left = left + 'px';
-  search.focus();
-  activeFilterDropdown = { el: dropdown, tabId, colIdx };
-}
-
-// Get cell value for a result row by column index (tab-aware)
-function getCellValue(r, colIdx, tabId) {
-  // colIdx is the index in the thead (including fixed cols)
-  // Fixed cols: 0=#, 1=Estado, 2=Tipomatch, 3=tramite, 4=mant, 5=nombre
-  const fixedCount = 6;
-  if(colIdx < fixedCount) {
-    const map = ['_idx','_status','_matchType','tramite','mant','nombre'];
-    if(map[colIdx] === '_status') return effectiveStatusLabel(r, tabId);
-    if(map[colIdx] === '_matchType') return r.matchType;
-    if(map[colIdx] === '_idx') return '';
-    return r[map[colIdx]] || '';
-  }
-  // Paired column: each field = 2 cols (port + area)
-  const activeCols = tabId === 'backlog' ? bGetActiveCols() : getActiveCols();
-  const pairIdx = colIdx - fixedCount;
-  const fieldIdx = Math.floor(pairIdx / 2);
-  const side = pairIdx % 2; // 0=port, 1=area
-  const col = activeCols[fieldIdx];
-  if(!col) return '';
-  const vals = r.allVals[col];
-  if(!vals) return '';
-  return side === 0 ? vals.v1 : vals.v2;
-}
-
-function effectiveStatusLabel(r, tabId) {
-  const eff = tabId === 'backlog' ? bEffectiveStatus(r) : effectiveStatus(r);
-  const map = {diff:'Diferencias',match:'Sin cambios',only1:tabId==='backlog'?'Solo backlog':'Solo portafolio',only2:'Solo área'};
-  return map[eff] || eff;
-}
-
-// Check if a row passes all active column filters
-function passesColFilters(r, tabId) {
-  const filters = colFilters[tabId];
-  if(filters.size === 0) return true;
-  for(const [colIdx, allowed] of filters.entries()) {
-    if(allowed.size === 0) continue;
-    const val = getCellValue(r, colIdx, tabId);
-    const display = (val === '' || val === null || val === undefined) ? '(vacío)' : String(val);
-    if(!allowed.has(display)) return false;
-  }
-  return true;
-}
-
-// ═══════════════════════════════════════════════════════════
 //  COMPARISON
 // ═══════════════════════════════════════════════════════════
 function runComparison() {
@@ -1344,7 +1116,6 @@ function doComparison() {
   results.forEach(r=>r.diffs.forEach(d=>diffColSet.add(d.col)));
   allDiffCols=IMPORTANT_COLS.filter(col=>diffColSet.has(col));
   selectedFieldFilter=new Set(); // clear = show all
-  colFilters.demanda.clear();
 
   buildFieldChips();
   renderResults();
@@ -1536,9 +1307,11 @@ function applyFilters() {
     if(currentFilterType==='status'  && eff !== currentFilterVal) return false;
     if(currentFilterType==='matchType' && r.matchType !== currentFilterVal) return false;
     if(search&&!normalize(r.tramite+' '+r.mant+' '+r.nombre).includes(search)) return false;
-    if(!passesColFilters(r,'demanda')) return false;
     return true;
   });
+
+  const tbody=document.getElementById('tableBody');
+  const thead=document.getElementById('tableHead');
   tbody.innerHTML='';
 
   if(filtered.length===0){
@@ -1553,16 +1326,21 @@ function applyFilters() {
   // ── Build dynamic header ──
   thead.innerHTML='';
   const fixedHeaders=['#','Estado','Tipo match','ID Trámite','ID Mantenimiento','Nombre del Requerimiento'];
-  fixedHeaders.forEach((h,i)=>{
-    thead.appendChild(buildTh(h, i===0?null:i, 'demanda'));
+  fixedHeaders.forEach(h=>{
+    const th=document.createElement('th'); th.textContent=h; thead.appendChild(th);
   });
   // paired columns
-  activeCols.forEach((col,ci)=>{
-    thead.appendChild(buildTh(col+' (Portafolio)', 6+ci*2,   'demanda', 'th-port'));
-    thead.appendChild(buildTh(col+' (Área)',       6+ci*2+1, 'demanda', 'th-area'));
+  activeCols.forEach(col=>{
+    const th1=document.createElement('th');
+    th1.textContent=col+' (Portafolio)';
+    th1.className='th-port'; thead.appendChild(th1);
+    const th2=document.createElement('th');
+    th2.textContent=col+' (Área)';
+    th2.className='th-area'; thead.appendChild(th2);
   });
+  // if no active cols selected, show a single "Diferencias" column
   if(activeCols.length===0){
-    thead.appendChild(buildTh('Campos con diferencias', null, 'demanda'));
+    const th=document.createElement('th'); th.textContent='Campos con diferencias'; thead.appendChild(th);
   }
 
   const statusMap={
@@ -2095,7 +1873,6 @@ function bDoComparison(){
   const diffSet=new Set(); results.forEach(r=>r.diffs.forEach(d=>diffSet.add(d.col)));
   bAllDiffCols=IMPORTANT_COLS_BACKLOG.filter(c=>diffSet.has(c));
   bSelectedFieldFilter=new Set();
-  colFilters.backlog.clear();
   bBuildFieldChips();
   bRenderResults();
   document.getElementById('b-loading').style.display='none';
@@ -2150,7 +1927,6 @@ function bApplyFilters(){
     if(bCurrentFilterType==='status'&&eff!==bCurrentFilterVal) return false;
     if(bCurrentFilterType==='matchType'&&r.matchType!==bCurrentFilterVal) return false;
     if(search&&!normalize(r.tramite+' '+r.mant+' '+r.nombre).includes(search)) return false;
-    if(!passesColFilters(r,'backlog')) return false;
     return true;
   });
 
@@ -2169,12 +1945,12 @@ function bApplyFilters(){
 
   thead.innerHTML='';
   const fixedH=['#','Estado','Tipo match','ID Trámite','ID Mantenimiento','Nombre'];
-  fixedH.forEach((h,i)=>{ thead.appendChild(buildTh(h, i===0?null:i, 'backlog')); });
-  activeCols.forEach((col,ci)=>{
-    thead.appendChild(buildTh(col+' (Backlog)', 6+ci*2,   'backlog', 'th-port'));
-    thead.appendChild(buildTh(col+' (Área)',    6+ci*2+1, 'backlog', 'th-area'));
+  fixedH.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; thead.appendChild(th); });
+  activeCols.forEach(col=>{
+    const t1=document.createElement('th'); t1.textContent=col+' (Backlog)';    t1.className='th-port'; thead.appendChild(t1);
+    const t2=document.createElement('th'); t2.textContent=col+' (Área)';       t2.className='th-area'; thead.appendChild(t2);
   });
-  if(activeCols.length===0){ thead.appendChild(buildTh('Campos con diferencias', null, 'backlog')); }
+  if(activeCols.length===0){ const th=document.createElement('th'); th.textContent='Campos con diferencias'; thead.appendChild(th); }
 
   const statusMap={diff:['badge-diff','🔶 Diferencias'],match:['badge-match','✅ Sin cambios'],only1:['badge-only1','📑 Solo backlog'],only2:['badge-only2','📄 Solo área']};
   const matchLabels={id_tramite:'<span class="match-chip match-tramite">ID Trámite</span>',id_mant:'<span class="match-chip match-mant">ID Mantenimiento</span>',extra:'<span class="match-chip match-extra">Otro ID</span>',nombre:'<span class="match-chip match-nombre">🔤 Nombre</span>','-':'<span class="match-none">—</span>'};
