@@ -168,8 +168,8 @@
   tbody tr:nth-child(even) { background: #f7fafc; }
   tbody tr:hover { background: #ebf8ff; }
   td { padding: 9px 12px; vertical-align: middle; max-width: 220px; }
-  td.td-port { background: #f0fff4; }
-  td.td-area { background: #fff5f5; }
+  td.td-port { background: #c6f6d5; }
+  td.td-area { background: #fed7d7; }
   td.td-same { background: transparent; }
 
   .badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; padding: 3px 10px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
@@ -228,10 +228,6 @@
     <label for="file1">📂 Seleccionar archivo Excel (.xlsx / .xlsm / .xls)</label>
     <input type="file" id="file1" accept=".xlsx,.xlsm,.xls">
     <div class="file-info" id="info1">Sin archivo cargado</div>
-    <div id="warn1" style="display:none;margin-top:8px;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;font-size:0.76rem;color:#6d4c00;">
-      ⚠️ <strong>Campos con fórmulas dinámicas detectados</strong> (como % PLANIFICADO, GAP, RATIO).<br>
-      Para que los valores sean los actuales, <strong>abre el archivo en Excel, guárdalo con Ctrl+S y vuelve a cargarlo aquí</strong>.
-    </div>
     <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
       <div class="config-group" style="min-width:140px;"><label>Hoja</label>
         <select id="sheet1" onchange="onSheetChange(1)"><option>-- carga archivo --</option></select></div>
@@ -244,10 +240,6 @@
     <label for="file2">📂 Seleccionar archivo Excel (.xlsx / .xlsm / .xls)</label>
     <input type="file" id="file2" accept=".xlsx,.xlsm,.xls">
     <div class="file-info" id="info2">Sin archivo cargado</div>
-    <div id="warn2" style="display:none;margin-top:8px;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;font-size:0.76rem;color:#6d4c00;">
-      ⚠️ <strong>Campos con fórmulas dinámicas detectados</strong>.<br>
-      Para que los valores sean los actuales, <strong>abre el archivo en Excel, guárdalo con Ctrl+S y vuelve a cargarlo aquí</strong>.
-    </div>
     <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
       <div class="config-group" style="min-width:140px;"><label>Hoja</label>
         <select id="sheet2" onchange="onSheetChange(2)"><option>-- carga archivo --</option></select></div>
@@ -664,27 +656,6 @@ function loadSheetData(num) {
   populateColSelectors(num, hdrs);
   maybeShowIdPanel();
   checkReady();
-
-  // Warn if any percentage column contains volatile formulas (TODAY, etc.)
-  // Detect by checking if pct cells have cell.f set (formula)
-  const warnEl = document.getElementById('warn'+num);
-  let hasVolatile = false;
-  const pctIndices = hdrs.map((h,i)=>isPctHeader(h)?i:-1).filter(i=>i>=0);
-  if(pctIndices.length > 0 && ws){
-    const ref2 = ws['!ref'] ? XLSX.utils.decode_range(ws['!ref']) : null;
-    if(ref2){
-      outer: for(let ri=ref2.s.r+1; ri<Math.min(ref2.s.r+10, ref2.e.r+1); ri++){
-        for(const ci of pctIndices){
-          const cell = ws[XLSX.utils.encode_cell({r:ri, c:ci})];
-          if(cell && cell.f){
-            hasVolatile = true;
-            break outer;
-          }
-        }
-      }
-    }
-  }
-  if(warnEl) warnEl.style.display = hasVolatile ? 'block' : 'none';
 }
 
 // Auto-detect which row is the header (first row with ≥3 non-empty text cells)
@@ -1330,7 +1301,7 @@ function exportResults() {
   // If activeCols exist, use paired mode; else compact mode
   const exportCols = activeCols.length>0 ? activeCols : allDiffCols;
 
-  // ── Build header row ──
+  // ── Build header row — same text/casing as the table in the app ──
   const fixedH=['#','Estado','Tipo Match','ID Trámite','ID Mantenimiento','Nombre del Requerimiento'];
   const headerRow=[...fixedH];
   exportCols.forEach(col=>{
@@ -1368,17 +1339,16 @@ function exportResults() {
   ws['!cols']=wCols.map(w=>({wch:w}));
 
   // ── Cell styles — exact same colors as the app ──
-  // xlsx-js-style format: fill:{patternType:'solid',fgColor:{rgb:'RRGGBB'}}, font:{bold,color:{rgb:'RRGGBB'}}
   const s = (fill, fontOpts={}) => ({
     fill: { patternType:'solid', fgColor:{ rgb: fill } },
     font: { bold: fontOpts.bold||false, color:{ rgb: fontOpts.color||'333333' } }
   });
 
-  const HDR_BLUE  = '1A237E';  // thead fixed  — dark blue  (same as app #1a237e)
-  const HDR_GREEN = '1B5E20';  // th-port      — dark green (same as app #1b5e20)
-  const HDR_RED   = 'B71C1C';  // th-area      — dark red   (same as app #b71c1c)
-  const CELL_PORT = 'F1F8E9';  // td-port      — light green
-  const CELL_AREA = 'FFEBEE';  // td-area      — light red
+  const HDR_FIXED = '1A202C';  // thead th fixed  — dark (#1a202c same as app)
+  const HDR_GREEN = '1B5E20';  // th-port         — dark green
+  const HDR_RED   = '7B1113';  // th-area         — dark red (#7b1113 same as app)
+  const CELL_PORT = 'C6F6D5';  // td-port         — stronger green (same as app)
+  const CELL_AREA = 'FED7D7';  // td-area         — stronger red   (same as app)
 
   // Freeze top row
   ws['!freeze'] = {xSplit:0, ySplit:1, topLeftCell:'A2', activeCell:'A2', sqref:'A2'};
@@ -1386,7 +1356,7 @@ function exportResults() {
   // Style fixed header row
   fixedH.forEach((_,ci)=>{
     const addr=XLSX.utils.encode_cell({r:0,c:ci});
-    if(ws[addr]) ws[addr].s = s(HDR_BLUE, {bold:true, color:'FFFFFF'});
+    if(ws[addr]) ws[addr].s = s(HDR_FIXED, {bold:true, color:'FFFFFF'});
   });
 
   if(exportCols.length>0){
