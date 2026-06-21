@@ -856,6 +856,24 @@ document.getElementById('table2').addEventListener('change',()=>{ if(wb2) loadSh
 //  UTILS
 // ═══════════════════════════════════════════════════════════
 function normalize(v){ if(v===null||v===undefined) return ''; return String(v).trim().toLowerCase().replace(/\s+/g,' '); }
+
+// Parse a percentage string like "10%", "10.00%", "-3.35%" → number, or null if not a pct string
+function parsePct(s) {
+  if(typeof s !== 'string') return null;
+  const m = s.trim().match(/^(-?\d+(?:\.\d+)?)%$/);
+  return m ? parseFloat(m[1]) : null;
+}
+
+// Returns true if two formatted values are effectively equal
+// Handles: "10%" == "10.00%", "10.00%" == "10.0%", normal string equality
+function valuesEqual(a, b) {
+  const na = normalize(a), nb = normalize(b);
+  if(na === nb) return true;
+  // Both look like percentages → compare numeric value rounded to 2dp
+  const pa = parsePct(String(a).trim()), pb = parsePct(String(b).trim());
+  if(pa !== null && pb !== null) return Math.abs(pa - pb) < 0.005; // < 0.005% difference
+  return false;
+}
 function fmtVal(v){ if(v===null||v===undefined||v==='') return '(vacío)'; return String(v).trim(); }
 function escHtml(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function getIdx(id){ const v=document.getElementById(id).value; return v===''?-1:parseInt(v); }
@@ -944,7 +962,7 @@ function doComparison() {
     commonCols.forEach(({col,i1,i2})=>{
       const v1=fmtVal(row1[i1]), v2=fmtVal(row2[i2]);
       allVals[col]={v1,v2};
-      if(normalize(v1)!==normalize(v2)) diffs.push({col,v1,v2});
+      if(!valuesEqual(v1,v2)) diffs.push({col,v1,v2});
     });
     results.push({
       status:diffs.length>0?'diff':'match', matchType:mType,
