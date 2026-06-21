@@ -690,7 +690,7 @@ function buildRows(ws, rawRows, startRowIdx, startColIdx, hdrs) {
   const pctColSet  = new Set();
   const ref = ws['!ref'] ? XLSX.utils.decode_range(ws['!ref']) : null;
 
-  // Detect date columns from cell format
+  // Detect date and pct columns from cell format
   if(ref){
     for(let ri=startRowIdx; ri<Math.min(startRowIdx+20, ref.e.r+1); ri++){
       for(let ci=ref.s.c; ci<=ref.e.c; ci++){
@@ -701,7 +701,6 @@ function buildRows(ws, rawRows, startRowIdx, startColIdx, hdrs) {
           const z=cell.z.toLowerCase();
           if(z.includes('yy')||z.includes('dd')||(z.includes('mm')&&!z.includes('#')))
             dateColSet.add(ci-startColIdx);
-          // Percentage format: contains '%'
           if(z.includes('%'))
             pctColSet.add(ci-startColIdx);
         }
@@ -709,12 +708,27 @@ function buildRows(ws, rawRows, startRowIdx, startColIdx, hdrs) {
     }
   }
 
-  // Also detect by header name (covers cases where cell format is plain number)
-  if(hdrs){
-    hdrs.forEach((h, ci) => { if(isPctHeader(h)) pctColSet.add(ci); });
+  // Also detect by header name
+  if(hdrs) hdrs.forEach((h,ci)=>{ if(isPctHeader(h)) pctColSet.add(ci); });
+
+  // Build a lookup: (rowOffset, colOffset) -> cell.w (SheetJS formatted text)
+  // We'll read formatted values for pct cols on demand from ws
+  function getFormattedPct(rowOffset, absColIdx) {
+    // rowOffset: 0-based index into rawRows → actual Excel row = startRowIdx + rowOffset
+    const r = startRowIdx + rowOffset;
+    const c = startColIdx + absColIdx;
+    const cell = ws[XLSX.utils.encode_cell({r, c})];
+    if(!cell) return null;
+    // cell.w is the pre-formatted string SheetJS computes using cell.z
+    if(cell.w !== undefined && cell.w !== null && cell.w !== '') return cell.w;
+    // Fallback: apply format manually
+    if(typeof cell.v === 'number' && cell.z){
+      try { return XLSX.SSF.format(cell.z, cell.v); } catch(e){}
+    }
+    return null;
   }
 
-  return rawRows.map(r=>r.map((v,ci)=>{
+  return rawRows.map((r,rowOffset)=>r.map((v,ci)=>{
     if(v===null||v===undefined||v==='') return v;
     if(dateColSet.has(ci)){
       if(v instanceof Date){
@@ -726,8 +740,9 @@ function buildRows(ws, rawRows, startRowIdx, startColIdx, hdrs) {
       }
     }
     if(pctColSet.has(ci) && typeof v==='number'){
-      // Values stored as decimals (0.14 = 14%) — multiply by 100
-      // Guard: if value is already > 2 or < -2 it's probably already a percentage number
+      const fmt = getFormattedPct(rowOffset, ci);
+      if(fmt !== null) return fmt;
+      // Last resort: multiply and round same as Excel would
       const pct = (v > 2 || v < -2) ? v : v * 100;
       return pct.toFixed(2)+'%';
     }
