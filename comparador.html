@@ -726,7 +726,10 @@ function buildRows(ws, rawRows, startRowIdx, startColIdx, hdrs) {
       }
     }
     if(pctColSet.has(ci) && typeof v==='number'){
-      return (v*100).toFixed(2)+'%';
+      // Values stored as decimals (0.14 = 14%) — multiply by 100
+      // Guard: if value is already > 2 or < -2 it's probably already a percentage number
+      const pct = (v > 2 || v < -2) ? v : v * 100;
+      return pct.toFixed(2)+'%';
     }
     return v;
   }));
