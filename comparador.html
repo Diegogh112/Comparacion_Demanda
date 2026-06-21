@@ -240,7 +240,7 @@
 
 <div class="tab-nav">
   <button class="tab-btn active" onclick="switchTab('demanda',this)">📋 Portafolio vs Área</button>
-  <button class="tab-btn" onclick="switchTab('backlog',this)">📑 Portafolio vs Backlog</button>
+  <button class="tab-btn" onclick="switchTab('backlog',this)">📑 Backlog vs Área</button>
 </div>
 
 <div id="tab-demanda" class="tab-pane active">
@@ -411,13 +411,13 @@
 </div><!-- /tab-demanda -->
 
 <!-- ══════════════════════════════════════════════════════════
-     TAB: PORTAFOLIO vs BACKLOG
+     TAB: BACKLOG vs ÁREA
 ═══════════════════════════════════════════════════════════ -->
 <div id="tab-backlog" class="tab-pane">
 
 <div class="upload-section">
   <div class="upload-card" id="b-card1">
-    <h3>📋 Portafolio de Demanda (Principal)</h3>
+    <h3>📑 Backlog de Requerimientos (Principal)</h3>
     <label for="b-file1">📂 Seleccionar archivo Excel (.xlsx / .xlsm / .xls)</label>
     <input type="file" id="b-file1" accept=".xlsx,.xlsm,.xls">
     <div class="file-info" id="b-info1">Sin archivo cargado</div>
@@ -429,7 +429,7 @@
     </div>
   </div>
   <div class="upload-card" id="b-card2">
-    <h3>📑 Backlog de Requerimientos</h3>
+    <h3>📄 Excel de Otra Área (Comparar)</h3>
     <label for="b-file2">📂 Seleccionar archivo Excel (.xlsx / .xlsm / .xls)</label>
     <input type="file" id="b-file2" accept=".xlsx,.xlsm,.xls">
     <div class="file-info" id="b-info2">Sin archivo cargado</div>
@@ -447,24 +447,24 @@
   <p class="id-cols-desc">Las columnas con borde verde fueron detectadas automáticamente.</p>
   <div class="id-cols-grid">
     <div class="id-cols-side port">
-      <h4>📋 PORTAFOLIO DE DEMANDA</h4>
-      <div class="id-col-row"><label>ID Trámite</label>
+      <h4>📑 BACKLOG DE REQUERIMIENTOS</h4>
+      <div class="id-col-row"><label>N° Trámite</label>
         <select id="b-col_tramite1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
       <div class="id-col-row"><label>ID Mantenimiento</label>
         <select id="b-col_mant1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
-      <div class="id-col-row"><label>Nombre del Requerimiento</label>
+      <div class="id-col-row"><label>Nombre</label>
         <select id="b-col_nombre1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
       <div class="id-col-row" id="b-extra-id-row-port" style="display:none">
         <label>Otro identificador</label><select id="b-col_extra1"></select></div>
     </div>
     <div class="id-cols-divider"></div>
     <div class="id-cols-side area">
-      <h4>📑 BACKLOG DE REQUERIMIENTOS</h4>
-      <div class="id-col-row"><label>N° Trámite</label>
+      <h4>📄 EXCEL DE OTRA ÁREA</h4>
+      <div class="id-col-row"><label>ID Trámite</label>
         <select id="b-col_tramite2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
       <div class="id-col-row"><label>ID Mantenimiento</label>
         <select id="b-col_mant2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
-      <div class="id-col-row"><label>Nombre</label>
+      <div class="id-col-row"><label>Nombre del Requerimiento</label>
         <select id="b-col_nombre2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
       <div class="id-col-row" id="b-extra-id-row-area" style="display:none">
         <label>Otro identificador</label><select id="b-col_extra2"></select></div>
@@ -477,7 +477,7 @@
 
 <div class="col-map-panel" id="b-colMapPanel">
   <h3>🔗 Vincular columnas equivalentes</h3>
-  <p class="col-map-desc">Si un campo del Portafolio y uno del Backlog tienen el mismo dato con distinto nombre, vincúlalos aquí.</p>
+  <p class="col-map-desc">Si un campo del Backlog y uno del Excel de área tienen el mismo dato con distinto nombre, vincúlalos aquí.</p>
   <div class="col-map-rows" id="b-colMapRows"></div>
   <button class="col-map-add" onclick="bAddMappingRow()">+ Añadir vínculo</button>
 </div>
@@ -511,10 +511,10 @@
     <div><div class="num" id="b-cnt-name">0</div><div class="lbl">Match por nombre</div></div>
   </div>
   <div class="stat-chip stat-only1" onclick="bSetFilterFromStat('only1',this)">
-    <div><div class="num" id="b-cnt-only1">0</div><div class="lbl">Solo en portafolio</div></div>
+    <div><div class="num" id="b-cnt-only1">0</div><div class="lbl">Solo en backlog</div></div>
   </div>
   <div class="stat-chip stat-only2" onclick="bSetFilterFromStat('only2',this)">
-    <div><div class="num" id="b-cnt-only2">0</div><div class="lbl">Solo en backlog</div></div>
+    <div><div class="num" id="b-cnt-only2">0</div><div class="lbl">Solo en área</div></div>
   </div>
 </div>
 
@@ -523,8 +523,8 @@
   <button class="filter-btn" style="border-color:#ed8936;color:#c05621" onclick="bSetFilter('status','diff',this)">🔶 Con diferencias</button>
   <button class="filter-btn" style="border-color:#48bb78;color:#276749" onclick="bSetFilter('status','match',this)">✅ Sin cambios</button>
   <button class="filter-btn" style="border-color:#4299e1;color:#2b6cb0" onclick="bSetFilter('matchType','nombre',this)">🔤 Match por nombre</button>
-  <button class="filter-btn" style="border-color:#667eea;color:#434190" onclick="bSetFilter('status','only1',this)">📋 Solo en portafolio</button>
-  <button class="filter-btn" style="border-color:#9f7aea;color:#553c9a" onclick="bSetFilter('status','only2',this)">📑 Solo en backlog</button>
+  <button class="filter-btn" style="border-color:#667eea;color:#434190" onclick="bSetFilter('status','only1',this)">📑 Solo en backlog</button>
+  <button class="filter-btn" style="border-color:#9f7aea;color:#553c9a" onclick="bSetFilter('status','only2',this)">📄 Solo en área</button>
   <input class="search-box" type="text" id="b-searchBox" placeholder="🔍 Buscar por ID, nombre..." oninput="bApplyFilters()">
 </div>
 
@@ -1615,14 +1615,20 @@ function bReadWorkbook(fileInput, sheetSel, infoEl, cardEl, num) {
         const o=document.createElement('option'); o.value=s; o.text=s;
         sheetSel.appendChild(o);
       });
-      // Priority: Gestión Backlog / Demanda Táctica
-      const prio=[
+      // Priority for file 1 (Backlog): Gestión Backlog first
+      // Priority for file 2 (Área): generic
+      const backlogPrio=[
         s=>/gesti[oó]n\s*backlog/i.test(s),
         s=>/backlog/i.test(s),
+        s=>/demanda/i.test(s),
+        s=>/cartera/i.test(s),
+      ];
+      const areaPrio=[
         s=>/demanda\s*t[aá]ctica/i.test(s),
         s=>/demanda/i.test(s),
         s=>/cartera/i.test(s),
       ];
+      const prio = num===1 ? backlogPrio : areaPrio;
       let chosen=null;
       for(const t of prio){ chosen=wb.SheetNames.find(t); if(chosen) break; }
       if(chosen) sheetSel.value=chosen;
@@ -1941,12 +1947,12 @@ function bApplyFilters(){
   const fixedH=['#','Estado','Tipo match','ID Trámite','ID Mantenimiento','Nombre'];
   fixedH.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; thead.appendChild(th); });
   activeCols.forEach(col=>{
-    const t1=document.createElement('th'); t1.textContent=col+' (Portafolio)'; t1.className='th-port'; thead.appendChild(t1);
-    const t2=document.createElement('th'); t2.textContent=col+' (Backlog)';    t2.className='th-area'; thead.appendChild(t2);
+    const t1=document.createElement('th'); t1.textContent=col+' (Backlog)';    t1.className='th-port'; thead.appendChild(t1);
+    const t2=document.createElement('th'); t2.textContent=col+' (Área)';       t2.className='th-area'; thead.appendChild(t2);
   });
   if(activeCols.length===0){ const th=document.createElement('th'); th.textContent='Campos con diferencias'; thead.appendChild(th); }
 
-  const statusMap={diff:['badge-diff','🔶 Diferencias'],match:['badge-match','✅ Sin cambios'],only1:['badge-only1','📋 Solo portafolio'],only2:['badge-only2','📑 Solo backlog']};
+  const statusMap={diff:['badge-diff','🔶 Diferencias'],match:['badge-match','✅ Sin cambios'],only1:['badge-only1','📑 Solo backlog'],only2:['badge-only2','📄 Solo área']};
   const matchLabels={id_tramite:'<span class="match-chip match-tramite">ID Trámite</span>',id_mant:'<span class="match-chip match-mant">ID Mantenimiento</span>',extra:'<span class="match-chip match-extra">Otro ID</span>',nombre:'<span class="match-chip match-nombre">🔤 Nombre</span>','-':'<span class="match-none">—</span>'};
 
   filtered.forEach((r,i)=>{
@@ -1995,11 +2001,11 @@ function bExportResults(){
     if(search&&!normalize(r.tramite+' '+r.mant+' '+r.nombre).includes(search)) return false;
     return true;
   });
-  const statusLabel={diff:'Con diferencias',match:'Sin cambios',only1:'Solo en portafolio',only2:'Solo en backlog'};
+  const statusLabel={diff:'Con diferencias',match:'Sin cambios',only1:'Solo en backlog',only2:'Solo en área'};
   const matchTypeLabel={id_tramite:'ID Trámite',id_mant:'ID Mantenimiento',extra:'Otro ID',nombre:'Nombre','-':'—'};
   const fixedH=['#','Estado','Tipo Match','ID Trámite','ID Mantenimiento','Nombre'];
   const headerRow=[...fixedH];
-  exportCols.forEach(col=>{ headerRow.push(col+' (Portafolio)'); headerRow.push(col+' (Backlog)'); });
+  exportCols.forEach(col=>{ headerRow.push(col+' (Backlog)'); headerRow.push(col+' (Área)'); });
   if(exportCols.length===0) headerRow.push('Diferencias');
   const wsData=[headerRow];
   filtered.forEach((r,i)=>{
@@ -2019,7 +2025,7 @@ function bExportResults(){
     exportCols.forEach((col,ci)=>{
       const pi=fixedH.length+ci*2, ai=pi+1;
       const pa=XLSX.utils.encode_cell({r:0,c:pi}), aa=XLSX.utils.encode_cell({r:0,c:ai});
-      if(!ws[pa]) ws[pa]={v:col+' (Portafolio)',t:'s'}; if(!ws[aa]) ws[aa]={v:col+' (Backlog)',t:'s'};
+      if(!ws[pa]) ws[pa]={v:col+' (Backlog)',t:'s'}; if(!ws[aa]) ws[aa]={v:col+' (Área)',t:'s'};
       ws[pa].s=s('1B5E20',{bold:true,color:'FFFFFF'}); ws[aa].s=s('7B1113',{bold:true,color:'FFFFFF'});
       filtered.forEach((r,ri)=>{ const isDiff=!!r.diffs.find(d=>d.col===col);
         const pa2=XLSX.utils.encode_cell({r:ri+1,c:pi}), aa2=XLSX.utils.encode_cell({r:ri+1,c:ai});
@@ -2030,7 +2036,7 @@ function bExportResults(){
   const SS={diff:s('FFF3E0',{bold:true,color:'B7791F'}),match:s('F0FFF4',{bold:true,color:'276749'}),only1:s('EBF4FF',{bold:true,color:'2B6CB0'}),only2:s('FAF5FF',{bold:true,color:'553C9A'})};
   filtered.forEach((r,ri)=>{ const a=XLSX.utils.encode_cell({r:ri+1,c:1}); const st=SS[r.status]; if(ws[a]&&st) ws[a].s=st; });
   XLSX.utils.book_append_sheet(wb,ws,'Comparación Backlog');
-  XLSX.writeFile(wb,'Comparacion_Backlog_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  XLSX.writeFile(wb,'Comparacion_Backlog_vs_Area_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 </script>
 </body>
