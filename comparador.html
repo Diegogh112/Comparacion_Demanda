@@ -167,13 +167,13 @@
   thead th.th-port {
     background: #1b5e20; background-color: #1b5e20;
     white-space: normal; word-break: break-word;
-    max-width: 120px; width: 120px;
+    max-width: 150px; width: 150px;
     height: 68px; vertical-align: bottom; line-height: 1.2; padding: 6px 8px; font-size: 0.68rem;
   }
   thead th.th-area {
     background: #7b1113; background-color: #7b1113;
     white-space: normal; word-break: break-word;
-    max-width: 120px; width: 120px;
+    max-width: 150px; width: 150px;
     height: 68px; vertical-align: bottom; line-height: 1.2; padding: 6px 8px; font-size: 0.68rem;
   }
   /* separator column between paired col groups */
@@ -183,9 +183,9 @@
   tbody tr:nth-child(even) { background: #f7fafc; }
   tbody tr:hover { background: #ebf8ff; }
   td { padding: 8px 10px; vertical-align: middle; font-size: 0.78rem; }
-  td.td-port { background: #c6f6d5; max-width: 120px; word-break: break-word; }
-  td.td-area { background: #fed7d7; max-width: 120px; word-break: break-word; }
-  td.td-same { background: transparent; max-width: 120px; word-break: break-word; }
+  td.td-port { background: #c6f6d5; max-width: 150px; word-break: break-word; }
+  td.td-area { background: #fed7d7; max-width: 150px; word-break: break-word; }
+  td.td-same { background: transparent; max-width: 150px; word-break: break-word; }
   td.td-fixed { white-space: nowrap; }
 
   .badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; padding: 3px 10px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
@@ -370,8 +370,8 @@
 <div class="field-filter-panel" id="fieldFilterPanel">
   <h3>🔎 Filtrar campos a mostrar</h3>
   <p class="field-filter-desc">
-    Selecciona los campos que quieres ver en la tabla y en el export. Aplica a filas con diferencias.
-    Si no marcas ninguno se muestran todos.
+    Selecciona los campos que quieres ver en detalle (columnas Portafolio/Área). Sin selección se muestra un resumen compacto de diferencias.
+    La selección también aplica al export.
   </p>
   <div class="field-chips-wrap" id="fieldChips"></div>
   <div class="field-filter-actions">
@@ -510,7 +510,7 @@
 
 <div class="field-filter-panel" id="b-fieldFilterPanel">
   <h3>🔎 Filtrar campos a mostrar</h3>
-  <p class="field-filter-desc">Selecciona los campos que quieres ver. Si no marcas ninguno se muestran todos.</p>
+  <p class="field-filter-desc">Selecciona los campos que quieres ver en detalle. Sin selección se muestra un resumen compacto de diferencias.</p>
   <div class="field-chips-wrap" id="b-fieldChips"></div>
   <div class="field-filter-actions">
     <button class="chip-action-btn" onclick="bSelectAllChips(true)">Seleccionar todos</button>
@@ -1324,8 +1324,9 @@ function setFilterFromStat(val, chip) {
 }
 
 // Returns the cols to actually show based on selectedFieldFilter
+// Empty selection = no paired columns shown (compact diff mode)
 function getActiveCols() {
-  if(selectedFieldFilter.size===0) return allDiffCols;  // all
+  if(selectedFieldFilter.size===0) return [];
   return allDiffCols.filter(c=>selectedFieldFilter.has(c));
 }
 
@@ -1993,7 +1994,7 @@ function bSetFilterFromStat(val,chip){
   }
   bApplyFilters();
 }
-function bGetActiveCols(){ return bSelectedFieldFilter.size===0?bAllDiffCols:bAllDiffCols.filter(c=>bSelectedFieldFilter.has(c)); }
+function bGetActiveCols(){ return bSelectedFieldFilter.size===0?[]:bAllDiffCols.filter(c=>bSelectedFieldFilter.has(c)); }
 
 function bApplyFilters(){
   const search=normalize(document.getElementById('b-searchBox').value);
