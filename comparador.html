@@ -194,7 +194,13 @@
   td.td-sep { background: #e2e8f0 !important; width: 8px; min-width: 8px; max-width: 8px; padding: 0; border-left: 3px solid #fc8181; }
   /* Fixed cells in row 1: no bottom border so they blend with row 2 */
   thead tr.thead-main th.th-fixed {
-    border-bottom: none; padding-bottom: 2px;
+    border-bottom: none;
+  }
+  thead tr.thead-main th.th-colname {
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+  }
+  thead tr.thead-main th.th-sep {
+    border-bottom: none;
   }
   /* Sub-header row 2 */
   thead tr.thead-sub th {
@@ -205,7 +211,8 @@
   }
   thead tr.thead-sub th.th-fixed-blank {
     background: #1a202c; color: transparent;
-    border-top: none; padding: 0; font-size: 0; height: 0; line-height: 0;
+    border: none; padding: 0; font-size: 0;
+    height: 0; max-height: 0; line-height: 0; overflow: hidden;
   }
   thead tr.thead-sub th.th-port { background: #2d6a4f; background-color: #2d6a4f; color: white; }
   thead tr.thead-sub th.th-area { background: #9b1c1f; background-color: #9b1c1f; color: white; }
