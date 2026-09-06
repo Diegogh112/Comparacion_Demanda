@@ -163,29 +163,41 @@
     border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 0.71rem;
     letter-spacing: 0.4px; text-transform: uppercase;
   }
-  /* Paired comparison columns: compact, wrap text, taller header */
+  /* Paired comparison columns: name row (colspan=2), taller */
   thead th.th-port {
     background: #1b5e20; background-color: #1b5e20;
     white-space: normal; word-break: break-word;
-    max-width: 150px; width: 150px;
-    height: 68px; vertical-align: bottom; line-height: 1.2; padding: 6px 8px; font-size: 0.68rem;
+    max-width: 300px; width: 300px;
+    height: 52px; vertical-align: bottom; line-height: 1.25; padding: 7px 10px; font-size: 0.7rem;
+    text-align: center;
   }
   thead th.th-area {
     background: #7b1113; background-color: #7b1113;
     white-space: normal; word-break: break-word;
-    max-width: 150px; width: 150px;
-    height: 68px; vertical-align: bottom; line-height: 1.2; padding: 6px 8px; font-size: 0.68rem;
+    max-width: 300px; width: 300px;
+    height: 52px; vertical-align: bottom; line-height: 1.25; padding: 7px 10px; font-size: 0.7rem;
+    text-align: center;
   }
   /* separator column between paired col groups */
   thead th.th-sep { background: #2d3748 !important; width: 8px; min-width: 8px; max-width: 8px; padding: 0; border-left: 3px solid #fc8181; }
   td.td-sep { background: #e2e8f0 !important; width: 8px; min-width: 8px; max-width: 8px; padding: 0; border-left: 3px solid #fc8181; }
+  /* Sub-header row: "Portafolio" / "Área" labels */
+  thead tr.thead-sub th {
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    padding: 3px 8px; height: auto; letter-spacing: 0.3px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+  thead tr.thead-sub th.th-port { background: #2d6a4f; background-color: #2d6a4f; }
+  thead tr.thead-sub th.th-area { background: #9b1c1f; background-color: #9b1c1f; }
+  thead tr.thead-sub th.th-sep  { background: #2d3748 !important; }
+  thead tr.thead-sub th.th-fixed-sub { background: #1a202c; }
   tbody tr { border-bottom: 1px solid #edf2f7; }
   tbody tr:nth-child(even) { background: #f7fafc; }
   tbody tr:hover { background: #ebf8ff; }
   td { padding: 8px 10px; vertical-align: middle; font-size: 0.78rem; }
-  td.td-port { background: #c6f6d5; max-width: 150px; word-break: break-word; }
-  td.td-area { background: #fed7d7; max-width: 150px; word-break: break-word; }
-  td.td-same { background: transparent; max-width: 150px; word-break: break-word; }
+  td.td-port { background: #c6f6d5; max-width: 150px; min-width: 100px; word-break: break-word; }
+  td.td-area { background: #fed7d7; max-width: 150px; min-width: 100px; word-break: break-word; }
+  td.td-same { background: transparent; max-width: 150px; min-width: 100px; word-break: break-word; }
   td.td-fixed { white-space: nowrap; }
 
   .badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; padding: 3px 10px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
@@ -427,7 +439,7 @@
   </div>
   <div id="tableWrap" style="display:none; overflow-x:auto;">
     <table id="resultsTable">
-      <thead><tr id="tableHead"></tr></thead>
+      <thead id="tableHead"></thead>
       <tbody id="tableBody"></tbody>
     </table>
   </div>
@@ -561,7 +573,7 @@
   </div>
   <div id="b-tableWrap" style="display:none; overflow-x:auto;">
     <table id="b-resultsTable">
-      <thead><tr id="b-tableHead"></tr></thead>
+      <thead id="b-tableHead"></thead>
       <tbody id="b-tableBody"></tbody>
     </table>
   </div>
@@ -1371,32 +1383,55 @@ function applyFilters() {
   document.getElementById('emptyState').style.display='none';
   document.getElementById('tableWrap').style.display='block';
 
-  // ── Build dynamic header ──
+  // ── Build dynamic header (2 rows: field name + Portafolio/Área) ──
   thead.innerHTML='';
   const fixedHeaders=['#','Estado','Tipo match','ID Trámite','ID Mantenimiento','Nombre del Requerimiento'];
-  fixedHeaders.forEach(h=>{
-    const th=document.createElement('th'); th.textContent=h; th.className='th-fixed'; thead.appendChild(th);
-  });
+
   // When onlyChanged: header shows union of all diff cols across visible rows
   const headerCols = currentFilterType==='onlyChanged'
     ? activeCols.filter(col => filtered.some(r=>r.diffs.some(d=>d.col===col)))
     : activeCols;
-  // paired columns with separator between groups
-  headerCols.forEach((col, idx)=>{
-    if(idx>0){
-      const sep=document.createElement('th'); sep.className='th-sep'; sep.textContent='';
-      thead.appendChild(sep);
-    }
-    const th1=document.createElement('th');
-    th1.textContent=col+' (Portafolio)';
-    th1.className='th-port'; thead.appendChild(th1);
-    const th2=document.createElement('th');
-    th2.textContent=col+' (Área)';
-    th2.className='th-area'; thead.appendChild(th2);
+
+  // ── Row 1: fixed labels (rowspan=2) + field names (colspan=2) ──
+  const tr1 = document.createElement('tr');
+  fixedHeaders.forEach(h=>{
+    const th=document.createElement('th');
+    th.textContent=h; th.className='th-fixed';
+    th.setAttribute('rowspan','2');
+    tr1.appendChild(th);
   });
   if(activeCols.length===0){
-    const th=document.createElement('th'); th.textContent='Campos con diferencias'; th.className='th-fixed'; thead.appendChild(th);
+    const th=document.createElement('th'); th.textContent='Campos con diferencias';
+    th.className='th-fixed'; th.setAttribute('rowspan','2'); tr1.appendChild(th);
   }
+  headerCols.forEach((col,idx)=>{
+    if(idx>0){
+      const sep=document.createElement('th'); sep.className='th-sep';
+      sep.setAttribute('rowspan','2'); tr1.appendChild(sep);
+    }
+    const th=document.createElement('th');
+    th.textContent=col; th.className='th-port';
+    th.setAttribute('colspan','2'); th.style.textAlign='center';
+    // override bg to neutral dark for the name row
+    th.style.background='#1a202c'; th.style.backgroundColor='#1a202c';
+    th.style.height='auto'; th.style.paddingBottom='4px';
+    tr1.appendChild(th);
+  });
+  thead.appendChild(tr1);
+
+  // ── Row 2: "Portafolio" / "Área" sub-labels ──
+  const tr2 = document.createElement('tr');
+  tr2.className = 'thead-sub';
+  headerCols.forEach((col,idx)=>{
+    if(idx>0){
+      const sep=document.createElement('th'); sep.className='th-sep thead-sub'; tr2.appendChild(sep);
+    }
+    const t1=document.createElement('th'); t1.textContent='Portafolio';
+    t1.className='th-port'; t1.style.width='150px'; t1.style.maxWidth='150px'; tr2.appendChild(t1);
+    const t2=document.createElement('th'); t2.textContent='Área';
+    t2.className='th-area'; t2.style.width='150px'; t2.style.maxWidth='150px'; tr2.appendChild(t2);
+  });
+  thead.appendChild(tr2);
 
   const statusMap={
     diff: ['badge-diff','🔶 Diferencias'],
@@ -2032,16 +2067,44 @@ function bApplyFilters(){
 
   thead.innerHTML='';
   const fixedH=['#','Estado','Tipo match','ID Trámite','ID Mantenimiento','Nombre'];
-  fixedH.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; th.className='th-fixed'; thead.appendChild(th); });
   const bHeaderCols = bCurrentFilterType==='onlyChanged'
     ? activeCols.filter(col => filtered.some(r=>r.diffs.some(d=>d.col===col)))
     : activeCols;
-  bHeaderCols.forEach((col, idx)=>{
-    if(idx>0){ const sep=document.createElement('th'); sep.className='th-sep'; thead.appendChild(sep); }
-    const t1=document.createElement('th'); t1.textContent=col+' (Backlog)';    t1.className='th-port'; thead.appendChild(t1);
-    const t2=document.createElement('th'); t2.textContent=col+' (Área)';       t2.className='th-area'; thead.appendChild(t2);
+
+  // ── Row 1: fixed labels (rowspan=2) + field names (colspan=2) ──
+  const bTr1 = document.createElement('tr');
+  fixedH.forEach(h=>{
+    const th=document.createElement('th'); th.textContent=h; th.className='th-fixed';
+    th.setAttribute('rowspan','2'); bTr1.appendChild(th);
   });
-  if(activeCols.length===0){ const th=document.createElement('th'); th.textContent='Campos con diferencias'; th.className='th-fixed'; thead.appendChild(th); }
+  if(activeCols.length===0){
+    const th=document.createElement('th'); th.textContent='Campos con diferencias';
+    th.className='th-fixed'; th.setAttribute('rowspan','2'); bTr1.appendChild(th);
+  }
+  bHeaderCols.forEach((col,idx)=>{
+    if(idx>0){
+      const sep=document.createElement('th'); sep.className='th-sep';
+      sep.setAttribute('rowspan','2'); bTr1.appendChild(sep);
+    }
+    const th=document.createElement('th'); th.textContent=col; th.className='th-port';
+    th.setAttribute('colspan','2'); th.style.textAlign='center';
+    th.style.background='#1a202c'; th.style.backgroundColor='#1a202c';
+    th.style.height='auto'; th.style.paddingBottom='4px';
+    bTr1.appendChild(th);
+  });
+  thead.appendChild(bTr1);
+
+  // ── Row 2: "Backlog" / "Área" sub-labels ──
+  const bTr2 = document.createElement('tr');
+  bTr2.className = 'thead-sub';
+  bHeaderCols.forEach((col,idx)=>{
+    if(idx>0){ const sep=document.createElement('th'); sep.className='th-sep'; bTr2.appendChild(sep); }
+    const t1=document.createElement('th'); t1.textContent='Backlog';
+    t1.className='th-port'; t1.style.width='150px'; t1.style.maxWidth='150px'; bTr2.appendChild(t1);
+    const t2=document.createElement('th'); t2.textContent='Área';
+    t2.className='th-area'; t2.style.width='150px'; t2.style.maxWidth='150px'; bTr2.appendChild(t2);
+  });
+  thead.appendChild(bTr2);
 
   const statusMap={diff:['badge-diff','🔶 Diferencias'],match:['badge-match','✅ Sin cambios'],only1:['badge-only1','📑 Solo backlog'],only2:['badge-only2','📄 Solo área']};
   const matchLabels={
