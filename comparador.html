@@ -163,34 +163,47 @@
     border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 0.71rem;
     letter-spacing: 0.4px; text-transform: uppercase;
   }
-  /* Paired comparison columns: name row (colspan=2), taller */
+  /* Paired comparison columns: name row (colspan=2) */
   thead th.th-port {
     background: #1b5e20; background-color: #1b5e20;
-    white-space: normal; word-break: break-word;
-    max-width: 300px; width: 300px;
-    height: 52px; vertical-align: bottom; line-height: 1.25; padding: 7px 10px; font-size: 0.7rem;
-    text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    width: 150px; min-width: 150px; max-width: 150px;
+    padding: 6px 8px; font-size: 0.69rem; text-align: center;
+    position: sticky; top: 0; z-index: 2;
   }
   thead th.th-area {
     background: #7b1113; background-color: #7b1113;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    width: 150px; min-width: 150px; max-width: 150px;
+    padding: 6px 8px; font-size: 0.69rem; text-align: center;
+    position: sticky; top: 0; z-index: 2;
+  }
+  /* Name-row th spanning 2 cols */
+  thead th.th-colname {
+    background: #1a202c; background-color: #1a202c; color: white;
     white-space: normal; word-break: break-word;
-    max-width: 300px; width: 300px;
-    height: 52px; vertical-align: bottom; line-height: 1.25; padding: 7px 10px; font-size: 0.7rem;
-    text-align: center;
+    width: 300px; min-width: 300px;
+    text-align: center; padding: 7px 10px; font-size: 0.71rem;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    position: sticky; top: 0; z-index: 2;
   }
   /* separator column between paired col groups */
-  thead th.th-sep { background: #2d3748 !important; width: 8px; min-width: 8px; max-width: 8px; padding: 0; border-left: 3px solid #fc8181; }
+  thead th.th-sep {
+    background: #2d3748 !important; width: 8px; min-width: 8px; max-width: 8px;
+    padding: 0; border-left: 3px solid #fc8181;
+    position: sticky; top: 0; z-index: 2;
+  }
   td.td-sep { background: #e2e8f0 !important; width: 8px; min-width: 8px; max-width: 8px; padding: 0; border-left: 3px solid #fc8181; }
   /* Sub-header row: "Portafolio" / "Área" labels */
   thead tr.thead-sub th {
     font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-    padding: 3px 8px; height: auto; letter-spacing: 0.3px;
+    padding: 3px 8px; letter-spacing: 0.3px;
     border-top: 1px solid rgba(255,255,255,0.15);
+    position: sticky; z-index: 2; /* top set dynamically by JS */
   }
-  thead tr.thead-sub th.th-port { background: #2d6a4f; background-color: #2d6a4f; }
-  thead tr.thead-sub th.th-area { background: #9b1c1f; background-color: #9b1c1f; }
-  thead tr.thead-sub th.th-sep  { background: #2d3748 !important; }
-  thead tr.thead-sub th.th-fixed-sub { background: #1a202c; }
+  thead tr.thead-sub th.th-port { background: #2d6a4f; background-color: #2d6a4f; width:150px; min-width:150px; max-width:150px; }
+  thead tr.thead-sub th.th-area { background: #9b1c1f; background-color: #9b1c1f; width:150px; min-width:150px; max-width:150px; }
+  thead tr.thead-sub th.th-sep  { background: #2d3748 !important; width:8px; min-width:8px; max-width:8px; }
   tbody tr { border-bottom: 1px solid #edf2f7; }
   tbody tr:nth-child(even) { background: #f7fafc; }
   tbody tr:hover { background: #ebf8ff; }
@@ -1410,11 +1423,8 @@ function applyFilters() {
       sep.setAttribute('rowspan','2'); tr1.appendChild(sep);
     }
     const th=document.createElement('th');
-    th.textContent=col; th.className='th-port';
-    th.setAttribute('colspan','2'); th.style.textAlign='center';
-    // override bg to neutral dark for the name row
-    th.style.background='#1a202c'; th.style.backgroundColor='#1a202c';
-    th.style.height='auto'; th.style.paddingBottom='4px';
+    th.textContent=col; th.className='th-colname';
+    th.setAttribute('colspan','2');
     tr1.appendChild(th);
   });
   thead.appendChild(tr1);
@@ -1424,14 +1434,18 @@ function applyFilters() {
   tr2.className = 'thead-sub';
   headerCols.forEach((col,idx)=>{
     if(idx>0){
-      const sep=document.createElement('th'); sep.className='th-sep thead-sub'; tr2.appendChild(sep);
+      const sep=document.createElement('th'); sep.className='th-sep'; tr2.appendChild(sep);
     }
-    const t1=document.createElement('th'); t1.textContent='Portafolio';
-    t1.className='th-port'; t1.style.width='150px'; t1.style.maxWidth='150px'; tr2.appendChild(t1);
-    const t2=document.createElement('th'); t2.textContent='Área';
-    t2.className='th-area'; t2.style.width='150px'; t2.style.maxWidth='150px'; tr2.appendChild(t2);
+    const t1=document.createElement('th'); t1.textContent='Portafolio'; t1.className='th-port'; tr2.appendChild(t1);
+    const t2=document.createElement('th'); t2.textContent='Área';       t2.className='th-area'; tr2.appendChild(t2);
   });
   thead.appendChild(tr2);
+
+  // ── Fix sticky top for second header row ──
+  requestAnimationFrame(()=>{
+    const h1 = tr1.getBoundingClientRect().height;
+    tr2.querySelectorAll('th').forEach(th=>{ th.style.top = h1+'px'; });
+  });
 
   const statusMap={
     diff: ['badge-diff','🔶 Diferencias'],
@@ -2086,11 +2100,8 @@ function bApplyFilters(){
       const sep=document.createElement('th'); sep.className='th-sep';
       sep.setAttribute('rowspan','2'); bTr1.appendChild(sep);
     }
-    const th=document.createElement('th'); th.textContent=col; th.className='th-port';
-    th.setAttribute('colspan','2'); th.style.textAlign='center';
-    th.style.background='#1a202c'; th.style.backgroundColor='#1a202c';
-    th.style.height='auto'; th.style.paddingBottom='4px';
-    bTr1.appendChild(th);
+    const th=document.createElement('th'); th.textContent=col; th.className='th-colname';
+    th.setAttribute('colspan','2'); bTr1.appendChild(th);
   });
   thead.appendChild(bTr1);
 
@@ -2099,12 +2110,16 @@ function bApplyFilters(){
   bTr2.className = 'thead-sub';
   bHeaderCols.forEach((col,idx)=>{
     if(idx>0){ const sep=document.createElement('th'); sep.className='th-sep'; bTr2.appendChild(sep); }
-    const t1=document.createElement('th'); t1.textContent='Backlog';
-    t1.className='th-port'; t1.style.width='150px'; t1.style.maxWidth='150px'; bTr2.appendChild(t1);
-    const t2=document.createElement('th'); t2.textContent='Área';
-    t2.className='th-area'; t2.style.width='150px'; t2.style.maxWidth='150px'; bTr2.appendChild(t2);
+    const t1=document.createElement('th'); t1.textContent='Backlog'; t1.className='th-port'; bTr2.appendChild(t1);
+    const t2=document.createElement('th'); t2.textContent='Área';    t2.className='th-area'; bTr2.appendChild(t2);
   });
   thead.appendChild(bTr2);
+
+  // ── Fix sticky top for second header row ──
+  requestAnimationFrame(()=>{
+    const h1 = bTr1.getBoundingClientRect().height;
+    bTr2.querySelectorAll('th').forEach(th=>{ th.style.top = h1+'px'; });
+  });
 
   const statusMap={diff:['badge-diff','🔶 Diferencias'],match:['badge-match','✅ Sin cambios'],only1:['badge-only1','📑 Solo backlog'],only2:['badge-only2','📄 Solo área']};
   const matchLabels={
