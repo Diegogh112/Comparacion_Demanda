@@ -157,17 +157,23 @@
   table { width: 100%; border-collapse: collapse; background: white; font-size: 0.78rem; }
   thead tr { background: #1a202c; color: white; }
   thead th {
-    padding: 10px 12px; text-align: left; white-space: nowrap; font-weight: 700;
+    padding: 6px 8px; text-align: left; white-space: normal; word-break: break-word;
+    font-weight: 700; max-width: 90px; width: 90px;
     position: sticky; top: 0; z-index: 2; background-color: #1a202c; color: white;
-    border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 0.71rem;
-    letter-spacing: 0.4px; text-transform: uppercase;
+    border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 0.68rem;
+    letter-spacing: 0.3px; text-transform: uppercase;
+    line-height: 1.25; height: 72px; vertical-align: bottom;
   }
   thead th.th-port { background: #1b5e20; background-color: #1b5e20; }
   thead th.th-area { background: #7b1113; background-color: #7b1113; }
+  thead th.th-fixed { white-space: nowrap; width: auto; max-width: none; }
+  /* separator column between paired col groups */
+  thead th.th-sep { background: #2d3748 !important; width: 6px; min-width: 6px; max-width: 6px; padding: 0; border-left: 3px solid #fc8181; }
+  td.td-sep { background: #e2e8f0 !important; width: 6px; min-width: 6px; max-width: 6px; padding: 0; border-left: 3px solid #fc8181; }
   tbody tr { border-bottom: 1px solid #edf2f7; }
   tbody tr:nth-child(even) { background: #f7fafc; }
   tbody tr:hover { background: #ebf8ff; }
-  td { padding: 9px 12px; vertical-align: middle; max-width: 220px; }
+  td { padding: 7px 8px; vertical-align: middle; max-width: 90px; font-size: 0.77rem; word-break: break-word; }
   td.td-port { background: #c6f6d5; }
   td.td-area { background: #fed7d7; }
   td.td-same { background: transparent; }
@@ -182,10 +188,12 @@
     display: inline-flex; align-items: center; gap: 4px;
     border-radius: 4px; padding: 2px 7px; font-size: 0.68rem; font-weight: 700; white-space: nowrap;
   }
+  .match-historico { background: #fef3c7; color: #92400e; }
   .match-tramite { background: #ebf4ff; color: #2b6cb0; }
   .match-mant    { background: #faf5ff; color: #553c9a; }
   .match-extra   { background: #fffbeb; color: #b7791f; }
   .match-nombre  { background: #e6fffa; color: #234e52; }
+  .match-memorando { background: #fff0f6; color: #97266d; }
   .match-none    { color: #a0aec0; font-size: 0.75rem; }
 
   .field-changes { }
@@ -279,51 +287,60 @@
     <div class="id-cols-side port">
       <h4>📋 PORTAFOLIO DE DEMANDA</h4>
       <div class="id-col-row">
-        <label>ID Trámite</label>
+        <label>1° ID Histórico</label>
+        <select id="col_historico1"></select>
+        <span class="match-tag">✔ detectado automáticamente</span>
+      </div>
+      <div class="id-col-row">
+        <label>2° ID Trámite</label>
         <select id="col_tramite1"></select>
         <span class="match-tag">✔ detectado automáticamente</span>
       </div>
       <div class="id-col-row">
-        <label>ID Mantenimiento</label>
+        <label>3° ID Mantenimiento</label>
         <select id="col_mant1"></select>
         <span class="match-tag">✔ detectado automáticamente</span>
       </div>
       <div class="id-col-row">
-        <label>Nombre del Requerimiento</label>
+        <label>4° Nombre del Requerimiento</label>
         <select id="col_nombre1"></select>
         <span class="match-tag">✔ detectado automáticamente</span>
       </div>
-      <div class="id-col-row" id="extra-id-row-port" style="display:none">
-        <label>Otro identificador</label>
-        <select id="col_extra1"></select>
+      <div class="id-col-row">
+        <label>5° Memorando STD</label>
+        <select id="col_memorando1"></select>
+        <span class="match-tag">✔ detectado automáticamente</span>
       </div>
     </div>
     <div class="id-cols-divider"></div>
     <div class="id-cols-side area">
       <h4>📄 EXCEL DE OTRA ÁREA</h4>
       <div class="id-col-row">
-        <label>ID Trámite</label>
+        <label>1° ID Histórico</label>
+        <select id="col_historico2"></select>
+        <span class="match-tag">✔ detectado automáticamente</span>
+      </div>
+      <div class="id-col-row">
+        <label>2° ID Trámite</label>
         <select id="col_tramite2"></select>
         <span class="match-tag">✔ detectado automáticamente</span>
       </div>
       <div class="id-col-row">
-        <label>ID Mantenimiento</label>
+        <label>3° ID Mantenimiento</label>
         <select id="col_mant2"></select>
         <span class="match-tag">✔ detectado automáticamente</span>
       </div>
       <div class="id-col-row">
-        <label>Nombre del Requerimiento</label>
+        <label>4° Nombre del Requerimiento</label>
         <select id="col_nombre2"></select>
         <span class="match-tag">✔ detectado automáticamente</span>
       </div>
-      <div class="id-col-row" id="extra-id-row-area" style="display:none">
-        <label>Otro identificador</label>
-        <select id="col_extra2"></select>
+      <div class="id-col-row">
+        <label>5° Memorando STD</label>
+        <select id="col_memorando2"></select>
+        <span class="match-tag">✔ detectado automáticamente</span>
       </div>
     </div>
-  </div>
-  <div style="margin-top:14px;">
-    <button class="chip-action-btn" id="btnAddExtra" onclick="toggleExtraId()">+ Añadir otro identificador</button>
   </div>
 </div>
 
@@ -448,30 +465,31 @@
   <div class="id-cols-grid">
     <div class="id-cols-side port">
       <h4>📑 BACKLOG DE REQUERIMIENTOS</h4>
-      <div class="id-col-row"><label>N° Trámite</label>
+      <div class="id-col-row"><label>1° ID Histórico</label>
+        <select id="b-col_historico1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
+      <div class="id-col-row"><label>2° ID Trámite</label>
         <select id="b-col_tramite1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
-      <div class="id-col-row"><label>ID Mantenimiento</label>
+      <div class="id-col-row"><label>3° ID Mantenimiento</label>
         <select id="b-col_mant1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
-      <div class="id-col-row"><label>Nombre</label>
+      <div class="id-col-row"><label>4° Nombre</label>
         <select id="b-col_nombre1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
-      <div class="id-col-row" id="b-extra-id-row-port" style="display:none">
-        <label>Otro identificador</label><select id="b-col_extra1"></select></div>
+      <div class="id-col-row"><label>5° Memorando STD</label>
+        <select id="b-col_memorando1"></select><span class="match-tag">✔ detectado automáticamente</span></div>
     </div>
     <div class="id-cols-divider"></div>
     <div class="id-cols-side area">
       <h4>📄 EXCEL DE OTRA ÁREA</h4>
-      <div class="id-col-row"><label>ID Trámite</label>
+      <div class="id-col-row"><label>1° ID Histórico</label>
+        <select id="b-col_historico2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
+      <div class="id-col-row"><label>2° ID Trámite</label>
         <select id="b-col_tramite2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
-      <div class="id-col-row"><label>ID Mantenimiento</label>
+      <div class="id-col-row"><label>3° ID Mantenimiento</label>
         <select id="b-col_mant2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
-      <div class="id-col-row"><label>Nombre del Requerimiento</label>
+      <div class="id-col-row"><label>4° Nombre del Requerimiento</label>
         <select id="b-col_nombre2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
-      <div class="id-col-row" id="b-extra-id-row-area" style="display:none">
-        <label>Otro identificador</label><select id="b-col_extra2"></select></div>
+      <div class="id-col-row"><label>5° Memorando STD</label>
+        <select id="b-col_memorando2"></select><span class="match-tag">✔ detectado automáticamente</span></div>
     </div>
-  </div>
-  <div style="margin-top:14px;">
-    <button class="chip-action-btn" id="b-btnAddExtra" onclick="bToggleExtraId()">+ Añadir otro identificador</button>
   </div>
 </div>
 
@@ -583,9 +601,12 @@ let colMappings=[];         // [{col1: 'Portafolio col name', col2: 'Area col na
 // ═══════════════════════════════════════════════════════════
 
 // Keywords for fuzzy auto-detection of ID columns
-const TRAMITE_KEYS  = ['trámite','tramite','tramit'];
-const MANT_KEYS     = ['mantenimiento','mant','maintenance'];
-const NOMBRE_KEYS   = ['nombre del requerimiento','nombre requerimiento','requerimiento','nombre req'];
+// Priority order: ID Histórico → ID Trámite → ID Mantenimiento → Nombre del Requerimiento → Memorando STD
+const HISTORICO_KEYS = ['id histórico','id historico','id hist','historico','histórico','hist'];
+const TRAMITE_KEYS   = ['id trámite','id tramite','trámite','tramite','tramit'];
+const MANT_KEYS      = ['id mantenimiento','mantenimiento','mant','maintenance'];
+const NOMBRE_KEYS    = ['nombre del requerimiento','nombre requerimiento','requerimiento','nombre req'];
+const MEMORANDO_KEYS = ['memorando std','memorando','std','mem std','memo std'];
 
 // Raw ArrayBuffers — not used directly, ZIP parsing is done inside readWorkbook
 let tableMap1 = new Map(), tableMap2 = new Map();
@@ -923,10 +944,13 @@ function autoMatchCol(hdrs, keyList) {
 }
 
 function populateColSelectors(num, hdrs) {
-  const selIds   = num===1?['col_tramite1','col_mant1','col_nombre1']:['col_tramite2','col_mant2','col_nombre2'];
-  const keyLists = [TRAMITE_KEYS, MANT_KEYS, NOMBRE_KEYS];
+  const selIds   = num===1
+    ? ['col_historico1','col_tramite1','col_mant1','col_nombre1','col_memorando1']
+    : ['col_historico2','col_tramite2','col_mant2','col_nombre2','col_memorando2'];
+  const keyLists = [HISTORICO_KEYS, TRAMITE_KEYS, MANT_KEYS, NOMBRE_KEYS, MEMORANDO_KEYS];
   selIds.forEach((selId,i)=>{
     const sel=document.getElementById(selId);
+    if(!sel) return;
     sel.innerHTML='<option value="">-- ninguna --</option>';
     hdrs.forEach((h,idx)=>{
       if(!h) return;
@@ -956,18 +980,7 @@ function maybeShowIdPanel() {
 }
 
 function toggleExtraId() {
-  const rowPort = document.getElementById('extra-id-row-port');
-  const rowArea = document.getElementById('extra-id-row-area');
-  const btn     = document.getElementById('btnAddExtra');
-  const hidden  = rowPort.style.display === 'none';
-  rowPort.style.display = hidden ? 'flex' : 'none';
-  rowArea.style.display = hidden ? 'flex' : 'none';
-  btn.textContent = hidden ? '✕ Quitar otro identificador' : '+ Añadir otro identificador';
-  if (!hidden) {
-    // reset when hiding
-    document.getElementById('col_extra1').value = '';
-    document.getElementById('col_extra2').value = '';
-  }
+  // legacy: extra id row removed in favor of 5 fixed identifiers
 }
 
 function checkReady() {
@@ -1007,7 +1020,7 @@ function valuesEqual(a, b) {
 }
 function fmtVal(v){ if(v===null||v===undefined||v==='') return '(vacío)'; return String(v).trim(); }
 function escHtml(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function getIdx(id){ const v=document.getElementById(id).value; return v===''?-1:parseInt(v); }
+function getIdx(id){ const el=document.getElementById(id); if(!el) return -1; const v=el.value; return v===''?-1:parseInt(v); }
 
 // ═══════════════════════════════════════════════════════════
 //  COMPARISON
@@ -1021,19 +1034,23 @@ function runComparison() {
 }
 
 function doComparison() {
-  const iT1=getIdx('col_tramite1'), iM1=getIdx('col_mant1'), iN1=getIdx('col_nombre1');
-  const iT2=getIdx('col_tramite2'), iM2=getIdx('col_mant2'), iN2=getIdx('col_nombre2');
-  const iX1=getIdx('col_extra1'),   iX2=getIdx('col_extra2');  // extra matching cols
+  const iH1=getIdx('col_historico1'), iT1=getIdx('col_tramite1'), iM1=getIdx('col_mant1'), iN1=getIdx('col_nombre1'), iMem1=getIdx('col_memorando1');
+  const iH2=getIdx('col_historico2'), iT2=getIdx('col_tramite2'), iM2=getIdx('col_mant2'), iN2=getIdx('col_nombre2'), iMem2=getIdx('col_memorando2');
+  const iX1=getIdx('col_extra1'),   iX2=getIdx('col_extra2');  // extra matching cols (legacy)
 
-  const byT2=new Map(), byM2=new Map(), byN2=new Map(), byX2=new Map(), matched2=new Set();
+  const byH2=new Map(), byT2=new Map(), byM2=new Map(), byN2=new Map(), byMem2=new Map(), byX2=new Map(), matched2=new Set();
   data2.forEach((row,i)=>{
+    const h=iH2>=0?normalize(row[iH2]):'';
     const t=iT2>=0?normalize(row[iT2]):'';
     const m=iM2>=0?normalize(row[iM2]):'';
     const n=iN2>=0?normalize(row[iN2]):'';
+    const mem=iMem2>=0?normalize(row[iMem2]):'';
     const x=iX2>=0?normalize(row[iX2]):'';
+    if(h) byH2.set(h,i);
     if(t) byT2.set(t,i);
     if(m) byM2.set(m,i);
     if(n) byN2.set(n,i);
+    if(mem) byMem2.set(mem,i);
     if(x) byX2.set(x,i);
   });
 
@@ -1071,15 +1088,19 @@ function doComparison() {
   const results=[];
 
   data1.forEach(row1=>{
+    const h1=iH1>=0?normalize(row1[iH1]):'';
     const t1=iT1>=0?normalize(row1[iT1]):'';
     const m1=iM1>=0?normalize(row1[iM1]):'';
     const n1=iN1>=0?normalize(row1[iN1]):'';
+    const mem1=iMem1>=0?normalize(row1[iMem1]):'';
     const x1=iX1>=0?normalize(row1[iX1]):'';
     let r2i=-1, mType='';
-    if(t1&&byT2.has(t1)){r2i=byT2.get(t1);mType='id_tramite';}
+    if(h1&&byH2.has(h1)){r2i=byH2.get(h1);mType='id_historico';}
+    else if(t1&&byT2.has(t1)){r2i=byT2.get(t1);mType='id_tramite';}
     else if(m1&&byM2.has(m1)){r2i=byM2.get(m1);mType='id_mant';}
-    else if(x1&&byX2.has(x1)){r2i=byX2.get(x1);mType='extra';}
     else if(n1&&byN2.has(n1)){r2i=byN2.get(n1);mType='nombre';}
+    else if(mem1&&byMem2.has(mem1)){r2i=byMem2.get(mem1);mType='memorando';}
+    else if(x1&&byX2.has(x1)){r2i=byX2.get(x1);mType='extra';}
 
     if(r2i===-1){
       results.push({status:'only1',matchType:'-',
@@ -1327,10 +1348,15 @@ function applyFilters() {
   thead.innerHTML='';
   const fixedHeaders=['#','Estado','Tipo match','ID Trámite','ID Mantenimiento','Nombre del Requerimiento'];
   fixedHeaders.forEach(h=>{
-    const th=document.createElement('th'); th.textContent=h; thead.appendChild(th);
+    const th=document.createElement('th'); th.textContent=h; th.className='th-fixed'; thead.appendChild(th);
   });
-  // paired columns
-  activeCols.forEach(col=>{
+  // paired columns with separator between groups
+  activeCols.forEach((col, idx)=>{
+    // separator before each group (except first)
+    if(idx>0){
+      const sep=document.createElement('th'); sep.className='th-sep'; sep.textContent='';
+      thead.appendChild(sep);
+    }
     const th1=document.createElement('th');
     th1.textContent=col+' (Portafolio)';
     th1.className='th-port'; thead.appendChild(th1);
@@ -1340,7 +1366,7 @@ function applyFilters() {
   });
   // if no active cols selected, show a single "Diferencias" column
   if(activeCols.length===0){
-    const th=document.createElement('th'); th.textContent='Campos con diferencias'; thead.appendChild(th);
+    const th=document.createElement('th'); th.textContent='Campos con diferencias'; th.className='th-fixed'; thead.appendChild(th);
   }
 
   const statusMap={
@@ -1350,11 +1376,13 @@ function applyFilters() {
     only2:['badge-only2','📄 Solo área']
   };
   const matchLabels={
-    id_tramite:'<span class="match-chip match-tramite">ID Trámite</span>',
-    id_mant:   '<span class="match-chip match-mant">ID Mantenimiento</span>',
-    extra:     '<span class="match-chip match-extra">Otro ID</span>',
-    nombre:    '<span class="match-chip match-nombre">🔤 Nombre</span>',
-    '-':       '<span class="match-none">—</span>'
+    id_historico:'<span class="match-chip match-historico">ID Histórico</span>',
+    id_tramite:  '<span class="match-chip match-tramite">ID Trámite</span>',
+    id_mant:     '<span class="match-chip match-mant">ID Mantenimiento</span>',
+    nombre:      '<span class="match-chip match-nombre">🔤 Nombre</span>',
+    memorando:   '<span class="match-chip match-memorando">Memorando STD</span>',
+    extra:       '<span class="match-chip match-extra">Otro ID</span>',
+    '-':         '<span class="match-none">—</span>'
   };
 
   filtered.forEach((r,i)=>{
@@ -1369,8 +1397,9 @@ function applyFilters() {
       <td style="max-width:220px;font-size:0.78rem">${escHtml(r.nombre)}</td>`;
 
     if(activeCols.length>0){
-      // paired column cells
-      activeCols.forEach(col=>{
+      // paired column cells with separator between groups
+      activeCols.forEach((col, idx)=>{
+        if(idx>0) html+=`<td class="td-sep"></td>`;
         const diffEntry=r.diffs.find(d=>d.col===col);
         const vals=r.allVals[col];
         if(diffEntry){
@@ -1598,6 +1627,8 @@ let bTableMap1=new Map(), bTableMap2=new Map();
 const BTRAMITE_KEYS  = ['trámite','tramite','n° trámite','n trámite'];
 const BMANT_KEYS     = ['mantenimiento','mant','id mantenimiento'];
 const BNOMBRE_KEYS   = ['nombre del requerimiento','nombre requerimiento','nombre','requerimiento'];
+const BHISTORICO_KEYS = ['id histórico','id historico','id hist','historico','histórico'];
+const BMEMORANDO_KEYS = ['memorando std','memorando','std','mem std','memo std'];
 
 // ── File loading ──
 function bReadWorkbook(fileInput, sheetSel, infoEl, cardEl, num) {
@@ -1685,8 +1716,10 @@ function bLoadSheetData(num) {
 }
 
 function bPopulateColSelectors(num,hdrs){
-  const ids=num===1?['b-col_tramite1','b-col_mant1','b-col_nombre1']:['b-col_tramite2','b-col_mant2','b-col_nombre2'];
-  const keys=[BTRAMITE_KEYS,BMANT_KEYS,BNOMBRE_KEYS];
+  const ids=num===1
+    ? ['b-col_historico1','b-col_tramite1','b-col_mant1','b-col_nombre1','b-col_memorando1']
+    : ['b-col_historico2','b-col_tramite2','b-col_mant2','b-col_nombre2','b-col_memorando2'];
+  const keys=[BHISTORICO_KEYS,BTRAMITE_KEYS,BMANT_KEYS,BNOMBRE_KEYS,BMEMORANDO_KEYS];
   ids.forEach((id,i)=>{
     const sel=document.getElementById(id); if(!sel) return;
     sel.innerHTML='<option value="">-- ninguna --</option>';
@@ -1710,13 +1743,7 @@ function bMaybeShowIdPanel(){
 }
 function bCheckReady(){ document.getElementById('b-btnCompare').disabled=!(bData1.length&&bData2.length); }
 function bToggleExtraId(){
-  const rp=document.getElementById('b-extra-id-row-port');
-  const ra=document.getElementById('b-extra-id-row-area');
-  const btn=document.getElementById('b-btnAddExtra');
-  const h=rp.style.display==='none';
-  rp.style.display=h?'flex':'none'; ra.style.display=h?'flex':'none';
-  btn.textContent=h?'✕ Quitar otro identificador':'+ Añadir otro identificador';
-  if(!h){document.getElementById('b-col_extra1').value='';document.getElementById('b-col_extra2').value='';}
+  // legacy: extra id row removed in favor of 5 fixed identifiers
 }
 
 document.getElementById('b-file1').addEventListener('change',function(){
@@ -1797,7 +1824,7 @@ function bRunComparison(){
   setTimeout(()=>{ try{bDoComparison();}catch(e){alert('Error: '+e.message);document.getElementById('b-loading').style.display='none';} },50);
 }
 
-function bGetIdx(id){ const v=document.getElementById(id).value; return v===''?-1:parseInt(v); }
+function bGetIdx(id){ const el=document.getElementById(id); if(!el) return -1; const v=el.value; return v===''?-1:parseInt(v); }
 
 function bEffectiveStatus(r){
   if(r.status==='diff'&&bSelectedFieldFilter.size>0){
@@ -1807,14 +1834,17 @@ function bEffectiveStatus(r){
 }
 
 function bDoComparison(){
-  const iT1=bGetIdx('b-col_tramite1'),iM1=bGetIdx('b-col_mant1'),iN1=bGetIdx('b-col_nombre1'),iX1=bGetIdx('b-col_extra1');
-  const iT2=bGetIdx('b-col_tramite2'),iM2=bGetIdx('b-col_mant2'),iN2=bGetIdx('b-col_nombre2'),iX2=bGetIdx('b-col_extra2');
+  const iH1=bGetIdx('b-col_historico1'), iT1=bGetIdx('b-col_tramite1'), iM1=bGetIdx('b-col_mant1'), iN1=bGetIdx('b-col_nombre1'), iMem1=bGetIdx('b-col_memorando1');
+  const iH2=bGetIdx('b-col_historico2'), iT2=bGetIdx('b-col_tramite2'), iM2=bGetIdx('b-col_mant2'), iN2=bGetIdx('b-col_nombre2'), iMem2=bGetIdx('b-col_memorando2');
+  const iX1=bGetIdx('b-col_extra1'), iX2=bGetIdx('b-col_extra2');
 
-  const byT2=new Map(),byM2=new Map(),byN2=new Map(),byX2=new Map(),matched2=new Set();
+  const byH2=new Map(),byT2=new Map(),byM2=new Map(),byN2=new Map(),byMem2=new Map(),byX2=new Map(),matched2=new Set();
   bData2.forEach((row,i)=>{
-    const t=iT2>=0?normalize(row[iT2]):'', m=iM2>=0?normalize(row[iM2]):'';
-    const n=iN2>=0?normalize(row[iN2]):'', x=iX2>=0?normalize(row[iX2]):'';
-    if(t) byT2.set(t,i); if(m) byM2.set(m,i); if(n) byN2.set(n,i); if(x) byX2.set(x,i);
+    const h=iH2>=0?normalize(row[iH2]):'', t=iT2>=0?normalize(row[iT2]):'';
+    const m=iM2>=0?normalize(row[iM2]):'', n=iN2>=0?normalize(row[iN2]):'';
+    const mem=iMem2>=0?normalize(row[iMem2]):'', x=iX2>=0?normalize(row[iX2]):'';
+    if(h) byH2.set(h,i); if(t) byT2.set(t,i); if(m) byM2.set(m,i);
+    if(n) byN2.set(n,i); if(mem) byMem2.set(mem,i); if(x) byX2.set(x,i);
   });
 
   // Build common cols
@@ -1843,13 +1873,16 @@ function bDoComparison(){
 
   const results=[];
   bData1.forEach(row1=>{
-    const t1=iT1>=0?normalize(row1[iT1]):'',m1=iM1>=0?normalize(row1[iM1]):'';
-    const n1=iN1>=0?normalize(row1[iN1]):'',x1=iX1>=0?normalize(row1[iX1]):'';
+    const h1=iH1>=0?normalize(row1[iH1]):'', t1=iT1>=0?normalize(row1[iT1]):'';
+    const m1=iM1>=0?normalize(row1[iM1]):'', n1=iN1>=0?normalize(row1[iN1]):'';
+    const mem1=iMem1>=0?normalize(row1[iMem1]):'', x1=iX1>=0?normalize(row1[iX1]):'';
     let r2i=-1,mType='';
-    if(t1&&byT2.has(t1)){r2i=byT2.get(t1);mType='id_tramite';}
+    if(h1&&byH2.has(h1)){r2i=byH2.get(h1);mType='id_historico';}
+    else if(t1&&byT2.has(t1)){r2i=byT2.get(t1);mType='id_tramite';}
     else if(m1&&byM2.has(m1)){r2i=byM2.get(m1);mType='id_mant';}
-    else if(x1&&byX2.has(x1)){r2i=byX2.get(x1);mType='extra';}
     else if(n1&&byN2.has(n1)){r2i=byN2.get(n1);mType='nombre';}
+    else if(mem1&&byMem2.has(mem1)){r2i=byMem2.get(mem1);mType='memorando';}
+    else if(x1&&byX2.has(x1)){r2i=byX2.get(x1);mType='extra';}
     if(r2i===-1){
       results.push({status:'only1',matchType:'-',tramite:fmtVal(iT1>=0?row1[iT1]:''),mant:fmtVal(iM1>=0?row1[iM1]:''),nombre:fmtVal(iN1>=0?row1[iN1]:''),diffs:[],allVals:{},row1,row2:null});
       return;
@@ -1945,15 +1978,24 @@ function bApplyFilters(){
 
   thead.innerHTML='';
   const fixedH=['#','Estado','Tipo match','ID Trámite','ID Mantenimiento','Nombre'];
-  fixedH.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; thead.appendChild(th); });
-  activeCols.forEach(col=>{
+  fixedH.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; th.className='th-fixed'; thead.appendChild(th); });
+  activeCols.forEach((col, idx)=>{
+    if(idx>0){ const sep=document.createElement('th'); sep.className='th-sep'; thead.appendChild(sep); }
     const t1=document.createElement('th'); t1.textContent=col+' (Backlog)';    t1.className='th-port'; thead.appendChild(t1);
     const t2=document.createElement('th'); t2.textContent=col+' (Área)';       t2.className='th-area'; thead.appendChild(t2);
   });
-  if(activeCols.length===0){ const th=document.createElement('th'); th.textContent='Campos con diferencias'; thead.appendChild(th); }
+  if(activeCols.length===0){ const th=document.createElement('th'); th.textContent='Campos con diferencias'; th.className='th-fixed'; thead.appendChild(th); }
 
   const statusMap={diff:['badge-diff','🔶 Diferencias'],match:['badge-match','✅ Sin cambios'],only1:['badge-only1','📑 Solo backlog'],only2:['badge-only2','📄 Solo área']};
-  const matchLabels={id_tramite:'<span class="match-chip match-tramite">ID Trámite</span>',id_mant:'<span class="match-chip match-mant">ID Mantenimiento</span>',extra:'<span class="match-chip match-extra">Otro ID</span>',nombre:'<span class="match-chip match-nombre">🔤 Nombre</span>','-':'<span class="match-none">—</span>'};
+  const matchLabels={
+    id_historico:'<span class="match-chip match-historico">ID Histórico</span>',
+    id_tramite:  '<span class="match-chip match-tramite">ID Trámite</span>',
+    id_mant:     '<span class="match-chip match-mant">ID Mantenimiento</span>',
+    nombre:      '<span class="match-chip match-nombre">🔤 Nombre</span>',
+    memorando:   '<span class="match-chip match-memorando">Memorando STD</span>',
+    extra:       '<span class="match-chip match-extra">Otro ID</span>',
+    '-':         '<span class="match-none">—</span>'
+  };
 
   filtered.forEach((r,i)=>{
     const tr=document.createElement('tr');
@@ -1966,7 +2008,8 @@ function bApplyFilters(){
       <td style="font-family:monospace;font-size:0.76rem">${escHtml(r.mant)}</td>
       <td style="max-width:220px;font-size:0.76rem">${escHtml(r.nombre)}</td>`;
     if(activeCols.length>0){
-      activeCols.forEach(col=>{
+      activeCols.forEach((col, idx)=>{
+        if(idx>0) html+=`<td class="td-sep"></td>`;
         const de=r.diffs.find(d=>d.col===col); const vals=r.allVals[col];
         if(de){ html+=`<td class="td-port">${escHtml(de.v1)}</td><td class="td-area">${escHtml(de.v2)}</td>`; }
         else if(vals){ html+=`<td class="td-same">${escHtml(vals.v1)}</td><td class="td-same">${escHtml(vals.v2)}</td>`; }
