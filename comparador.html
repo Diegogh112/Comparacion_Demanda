@@ -1334,18 +1334,16 @@ function applyFilters() {
   const activeCols=getActiveCols();
 
   // ── Recalculate counters based on active field filter ──
-  const counts={diff:0,match:0,name:0,only1:0,only2:0};
+  const counts={diff:0,match:0,only1:0,only2:0};
   compResults.forEach(r=>{
     const eff=effectiveStatus(r);
     if(eff==='diff')   counts.diff++;
     if(eff==='match')  counts.match++;
     if(eff==='only1')  counts.only1++;
     if(eff==='only2')  counts.only2++;
-    if(r.matchType==='nombre') counts.name++;
   });
   document.getElementById('cnt-diff').textContent  =counts.diff;
   document.getElementById('cnt-match').textContent =counts.match;
-  document.getElementById('cnt-name').textContent  =counts.name;
   document.getElementById('cnt-only1').textContent =counts.only1;
   document.getElementById('cnt-only2').textContent =counts.only2;
 
